@@ -1,4 +1,4 @@
-# Runs the original neko and Tuna side by side behind one Caddy.
+# Tuna behind Caddy (automatic HTTPS).
 # Copy this folder's files to the server, create .env from
 # .env.example, then: docker compose pull && docker compose up -d
 services:
@@ -14,12 +14,10 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
-      - neko
       - tuna
 
-  # Original neko instance, served at NEKO_DOMAIN.
-  neko:
-    image: ghcr.io/m1k1o/neko/firefox:latest
+  tuna:
+    image: ghcr.io/diabeatz96/tuna:latest
     restart: unless-stopped
     shm_size: "2gb"
     ports:
@@ -29,22 +27,6 @@ services:
     environment:
       NEKO_DESKTOP_SCREEN: "1920x1080@30"
       NEKO_WEBRTC_EPR: "56000-56100"
-      NEKO_WEBRTC_NAT1TO1: "${PUBLIC_IP}"
-      NEKO_MEMBER_MULTIUSER_USER_PASSWORD: "${NEKO_USER_PASSWORD}"
-      NEKO_MEMBER_MULTIUSER_ADMIN_PASSWORD: "${NEKO_ADMIN_PASSWORD}"
-
-  # Tuna, served at TUNA_DOMAIN. Uses its own UDP range.
-  tuna:
-    image: ghcr.io/diabeatz96/tuna:latest
-    restart: unless-stopped
-    shm_size: "2gb"
-    ports:
-      - "57000-57100:57000-57100/udp"
-    volumes:
-      - ./media:/home/neko/Downloads
-    environment:
-      NEKO_DESKTOP_SCREEN: "1920x1080@30"
-      NEKO_WEBRTC_EPR: "57000-57100"
       NEKO_WEBRTC_NAT1TO1: "${PUBLIC_IP}"
       NEKO_MEMBER_MULTIUSER_USER_PASSWORD: "${TUNA_USER_PASSWORD}"
       NEKO_MEMBER_MULTIUSER_ADMIN_PASSWORD: "${TUNA_ADMIN_PASSWORD}"

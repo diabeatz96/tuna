@@ -1,8 +1,4 @@
-# Domains come from .env (NEKO_DOMAIN, TUNA_DOMAIN).
-{$NEKO_DOMAIN} {
-    reverse_proxy neko:8080
-}
-
+# TUNA_DOMAIN comes from .env. List several domains separated by commas.
 {$TUNA_DOMAIN} {
     reverse_proxy tuna:8080
 }
