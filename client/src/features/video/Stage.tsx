@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { useStore } from 'zustand'
 import { useShallow } from 'zustand/react/shallow'
 import { selectControlling, selectIsAdmin } from '@m1k1o/neko'
@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import {
   ArrowsOutIcon,
   ClipboardIcon,
+  CrosshairIcon,
   EyeSlashIcon,
   KeyboardIcon,
   MonitorIcon,
@@ -20,8 +21,12 @@ import { useNeko } from '@/state/provider'
 import { IconButton } from '@/components/IconButton'
 import { DropdownMenu, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Popover, PopoverTrigger } from '@/components/ui/popover'
+import { sendPing } from '@/state/pings'
 import { Emote } from '@/features/emotes/Emote'
 import { Reactions } from '@/features/emotes/Reactions'
+import { Pings, pointOnPicture } from '@/features/ping/Pings'
+import { Seats } from '@/features/seats/Seats'
+import { Mascot } from '@/features/mascot/Mascot'
 import { Resolution } from './Resolution'
 import { Clipboard } from './Clipboard'
 import { Player } from './Player'
@@ -35,8 +40,13 @@ const overlayClasses =
 
 export function Stage({ hideControls, extraControls }: { hideControls: boolean; extraControls: boolean }) {
   const { t } = useTranslation()
-  const { client, overlay, app } = useNeko()
+  const neko = useNeko()
+  const { client, overlay, app } = neko
   const actions = useActions()
+  // the next click or tap on the picture drops a ping (Alt+click always does)
+  const [pingMode, setPingMode] = useState(false)
+  // the mouse events a browser makes up after a tap, which must not reach the remote desktop
+  const swallowUntil = useRef(0)
   const { admin, hosting, hosted, implicit, lockedControls, curtain, video } = useStore(
     client.store,
     useShallow((s) => ({
@@ -61,16 +71,47 @@ export function Stage({ hideControls, extraControls }: { hideControls: boolean; 
   // usually the extra controls are only shown on a phone
   const extra = extraControls ? '' : 'phone:block hidden'
 
+  // a ping instead of input for the remote desktop: these run in the capture phase, before the
+  // overlay's own listeners, and stop the event there
+  const ping = (e: React.SyntheticEvent, clientX: number, clientY: number) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const p = pointOnPicture(player.current, clientX, clientY)
+    if (p) sendPing(neko, p.x, p.y)
+    setPingMode(false)
+    swallowUntil.current = Date.now() + 700
+  }
+  const swallow = (e: React.SyntheticEvent) => {
+    if (Date.now() >= swallowUntil.current) return false
+    e.preventDefault()
+    e.stopPropagation()
+    return true
+  }
+
   return (
     <div className="relative h-full w-full">
       <div ref={player} className="absolute inset-0 flex items-center justify-center bg-black">
-        <div className="absolute inset-0" data-testid="player" onMouseEnter={syncClipboard}>
+        <div
+          className={cn('absolute inset-0', pingMode && 'cursor-crosshair')}
+          data-testid="player"
+          onMouseEnter={syncClipboard}
+          onMouseDownCapture={(e) => {
+            if (swallow(e)) return
+            if (e.button === 0 && (e.altKey || pingMode)) ping(e, e.clientX, e.clientY)
+          }}
+          onMouseUpCapture={swallow}
+          onClickCapture={swallow}
+          onTouchStartCapture={(e) => pingMode && ping(e, e.touches[0].clientX, e.touches[0].clientY)}
+        >
           <Player transport={client.transport} />
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
             {Object.entries(emotes).map(([id, type]) => (
               <Emote key={id} id={id} type={type} />
             ))}
+            {!hideControls && <Seats />}
+            {!hideControls && <Mascot />}
             {!hideControls && <Reactions />}
+            <Pings stage={player} />
           </div>
           {curtain && (
             <div
@@ -112,6 +153,18 @@ export function Stage({ hideControls, extraControls }: { hideControls: boolean; 
             <li className="mb-2.5 last:mb-0">
               <IconButton variant="video" label="Fullscreen" onClick={requestFullscreen}>
                 <ArrowsOutIcon className="size-4" />
+              </IconButton>
+            </li>
+            <li className="mb-2.5 last:mb-0">
+              <IconButton
+                variant="video"
+                label={t('ping.button')}
+                className={cn(pingMode && 'bg-style-primary text-white')}
+                aria-pressed={pingMode}
+                data-testid="ping-mode"
+                onClick={() => setPingMode(!pingMode)}
+              >
+                <CrosshairIcon className="size-4" />
               </IconButton>
             </li>
             {admin && (

@@ -17,7 +17,8 @@ export function Player({ transport }: { transport: StreamTransport }) {
   }, [transport, overlay])
   return (
     <div className="absolute inset-0 overflow-hidden">
-      <div ref={box} style={{ position: 'relative' }} />
+      {/* data-box: the picture's area (the overlay letterboxes it), what pings are measured on */}
+      <div ref={box} style={{ position: 'relative' }} data-box />
     </div>
   )
 }

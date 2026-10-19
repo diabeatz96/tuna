@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useStore } from 'zustand'
 import { useTranslation } from 'react-i18next'
+import { cn } from '@/lib/utils'
 import { hideReaction, type Reaction } from '@/state/emotes'
 import { useApp, useClient } from '@/state/provider'
 import './sprites.css'
@@ -12,12 +13,18 @@ const FADE = 4000
 export function Reactions() {
   const { t } = useTranslation()
   const client = useClient()
-  const reactions = useStore(useApp(), (s) => s.reactions)
+  const app = useApp()
+  const reactions = useStore(app, (s) => s.reactions)
+  // right of the mascot when she is there
+  const mascot = useStore(app, (s) => s.settings.show_mascot)
   const sessions = useStore(client.store, (s) => s.sessions)
   const me = useStore(client.store, (s) => s.session_id)
   if (!reactions.length) return null
   return (
-    <ul className="absolute bottom-[15px] left-[15px] flex flex-col items-start gap-1" data-testid="reactions">
+    <ul
+      className={cn('absolute bottom-[15px] flex flex-col items-start gap-1', mascot ? 'left-[90px]' : 'left-[15px]')}
+      data-testid="reactions"
+    >
       {reactions.map((r) => (
         <Line
           key={r.key}

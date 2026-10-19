@@ -9,6 +9,7 @@ import { get } from './storage'
 import type { Dialog } from './dialogs'
 import type { Bus } from './bus'
 import type { Reaction } from './emotes'
+import type { Ping } from './pings'
 import { t } from '@/i18n'
 
 export const defaults = {
@@ -20,6 +21,12 @@ export const defaults = {
   chat_sound: true,
   // a short chime when someone joins or leaves (state/sound.ts)
   join_sound: false,
+  // the soundboard's sounds from the others (state/soundboard.ts)
+  ignore_sounds: false,
+  // everyone's avatar in a row of seats along the bottom of the video
+  theater_seats: false,
+  // Tuna the cat on the video (features/mascot)
+  show_mascot: true,
   // open chat links on the remote desktop instead of locally (needs the openinapp plugin)
   links_in_app: false,
   keyboard_layout: 'us',
@@ -45,6 +52,13 @@ export function createAppStore() {
     emotes: {} as Record<string, string>,
     // who sent which emote lately, the tally over the video (state/emotes.ts)
     reactions: [] as Reaction[],
+    // markers dropped on the picture (state/pings.ts)
+    pings: [] as Ping[],
+    // when each member last cheered (an emote, a sound, a ping): their theater seat hops
+    cheers: {} as Record<string, number>,
+    // the room's last emote, sound or ping, and its last feeding: the mascot's mood
+    activity: Date.now(),
+    fed: { at: 0, by: '' },
     ignored: {} as Record<string, boolean>,
     broadcast: { active: false, url: '' },
     keyboardLayouts: {} as Record<string, string>,

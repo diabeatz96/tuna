@@ -64,7 +64,14 @@ export interface Reaction {
 export const BURST = 3000
 export const SHOWN = 3
 
+// a member did something lively: their seat hops and the mascot perks up
+export function cheer(app: AppStore, sender: string) {
+  const now = Date.now()
+  app.setState((s) => ({ activity: now, cheers: sender ? { ...s.cheers, [sender]: now } : s.cheers }))
+}
+
 export function showEmote(app: AppStore, emote: string, sender = '') {
+  cheer(app, sender)
   if (app.getState().settings.ignore_emotes || document.visibilityState === 'hidden') return
   const now = Date.now()
   app.setState((s) => {

@@ -2,9 +2,10 @@ import type { NekoApp } from '@/state/app'
 import type { Plugin, PluginEventArgs, Slots } from './types'
 import { chat } from './chat'
 import { filetransfer } from './filetransfer'
+import { bingo } from './bingo'
 
 // the plugins of this build, in side-panel order; adding one is its folder plus a line here
-export const plugins: Plugin[] = [chat, filetransfer]
+export const plugins: Plugin[] = [chat, filetransfer, bingo]
 
 // what the plugins put into each place of the GUI, in registry order; filled once by initPlugins
 const slots: { [K in keyof Slots]: Slots[K][] } = { 'side.tab': [], 'header.item': [], 'member.menu': [] }

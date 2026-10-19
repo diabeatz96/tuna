@@ -14,6 +14,7 @@ const { initPlugins, useSlot } = await import('./index.ts')
 const { chat } = await import('./chat/store.ts')
 const { store: files } = await import('./filetransfer/store.ts')
 const { mutedByMe } = await import('./chat/actions.ts')
+const { bingo } = await import('./bingo/store.ts')
 
 const a = createNekoApp({ transport: fakeTransport() })
 const b = createNekoApp({ transport: fakeTransport() })
@@ -25,7 +26,7 @@ const update = { enabled: true, root_dir: '/', user_download: true, user_upload:
 test('the slots are filled once, whatever the number of instances', () => {
   assert.deepEqual(
     useSlot('side.tab').map((x) => x.id),
-    ['chat', 'files'],
+    ['chat', 'files', 'bingo'],
   )
   assert.deepEqual(
     useSlot('header.item').map((x) => x.id),
@@ -55,6 +56,14 @@ test('a plugin store is per instance: a server event of one fills its store only
 
   b.client.events.emit('message', 'filetransfer/update', update)
   assert.deepEqual([files(a).getState().files, files(b).getState().files], [null, update])
+})
+
+test('a bingo round reaches the instance whose room started it, and a malformed one nobody', () => {
+  a.client.events.emit('receive.broadcast', 'carol', 'bingo', { type: 'start', seed: 'r1' })
+  a.client.events.emit('receive.broadcast', 'carol', 'bingo', { type: 'start', seed: 42 })
+  b.client.events.emit('receive.broadcast', 'carol', 'bingo', { type: 'start' })
+  assert.deepEqual([bingo(a).getState().seed, bingo(a).getState().by], ['r1', 'carol'])
+  assert.equal(bingo(b).getState().seed, '')
 })
 
 test("a plugin's wiring is per instance: the bus lines and the logout of one", () => {

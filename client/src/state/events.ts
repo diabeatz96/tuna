@@ -1,11 +1,14 @@
 // event wiring: turn v3 events into event lines (shown by the chat) and toasts
 import type { Settings } from '@m1k1o/neko'
-import { isLocked, name, ROOM_TOGGLES, type LockResource, type NekoApp } from './app'
+import { isLocked, isMuted, name, ROOM_TOGGLES, type LockResource, type NekoApp } from './app'
 import { actions } from './actions'
 import { toast, tell, dismissToasts } from './dialogs'
 import { event } from './bus'
 import { EMOTES, showEmote } from './emotes'
+import { showFeed } from './mascot'
+import { showPing } from './pings'
 import { chime } from './sound'
+import { hearSound, isSound } from './soundboard'
 import { t } from '@/i18n'
 
 // once per instance (createNekoApp), before the connection
@@ -111,8 +114,13 @@ export function wireEvents(neko: NekoApp) {
   ev.on('room.broadcast.status', (active, url) => app.setState({ broadcast: { active, url: url || '' } }))
 
   ev.on('receive.broadcast', (sender, subject, body) => {
-    // other clients may send anything; only known names become class names on screen
-    if (subject === 'emote' && EMOTES.includes(body) && !app.getState().ignored[sender]) showEmote(app, body, sender)
+    // other clients may send anything: each subject checks its body (only known names become class
+    // names or sounds); what ignored or muted members send is dropped
+    if (app.getState().ignored[sender] || isMuted(client, sender)) return
+    if (subject === 'emote' && EMOTES.includes(body)) showEmote(app, body, sender)
+    else if (subject === 'sound' && isSound(body)) hearSound(neko, sender, body)
+    else if (subject === 'ping') showPing(app, sender, body?.x, body?.y)
+    else if (subject === 'feed') showFeed(neko, sender)
   })
 
   // plugin events (`chat/*`, ...) are dispatched by the plugin registry

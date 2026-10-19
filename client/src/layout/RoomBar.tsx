@@ -2,6 +2,7 @@ import { Members } from '@/features/members/Members'
 import { RoomMenu } from '@/features/room-menu/RoomMenu'
 import { Controls } from '@/features/controls/Controls'
 import { Emotes } from '@/features/emotes/Emotes'
+import { Soundboard } from '@/features/soundboard/Soundboard'
 
 // the bar under the video: the members, then the room menu, the controls and the emotes in three
 // columns (a grid, so the columns stay when the emotes are hidden); on a phone a compact row, the
@@ -19,7 +20,10 @@ export function RoomBar() {
       <div className="phone:flex phone:items-center phone:justify-between short:flex short:items-center short:justify-between grid max-w-full flex-1 grid-cols-3">
         <RoomMenu />
         <Controls />
-        <Emotes />
+        <div className="flex items-center justify-self-end">
+          <Soundboard />
+          <Emotes />
+        </div>
       </div>
     </div>
   )
