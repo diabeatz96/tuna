@@ -12,6 +12,7 @@ import { IconButton } from '@/components/IconButton'
 import { useSlot } from '@/plugins'
 import { EachHook } from '@/components/EachHook'
 import logo from '@/assets/images/logo.svg'
+import { BRAND } from '@/lib/brand'
 
 const zero = () => 0
 
@@ -57,7 +58,7 @@ export function Header() {
         rel="noreferrer"
         className="ml-5 flex w-[150px] flex-1 items-center justify-start"
       >
-        <img src={logo} alt="n.eko" className="mr-2.5 block h-7.5" />
+        <img src={logo} alt={BRAND.name} className="mr-2.5 block h-7.5" />
         <span className="text-[30px] leading-7.5">
           <b className="font-black">n</b>.eko
         </span>

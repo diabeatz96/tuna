@@ -5,6 +5,7 @@ import { QuestionIcon, ShieldIcon } from '@phosphor-icons/react'
 import { useNeko } from '@/state/provider'
 import { IconButton } from '@/components/IconButton'
 import { langs, setLang, type Lang } from '@/i18n'
+import { BRAND } from '@/lib/brand'
 
 // about, the admin badge and the language picker, left of the controls
 export function RoomMenu() {
@@ -14,7 +15,11 @@ export function RoomMenu() {
   return (
     <ul className="ml-2.5 self-center">
       <li className="mr-2.5 inline-block align-middle">
-        <IconButton label="About n.eko" data-testid="about-open" onClick={() => app.setState({ about: true })}>
+        <IconButton
+          label={`About ${BRAND.name}`}
+          data-testid="about-open"
+          onClick={() => app.setState({ about: true })}
+        >
           <QuestionIcon className="size-6" />
         </IconButton>
       </li>

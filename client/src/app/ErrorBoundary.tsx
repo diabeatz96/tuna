@@ -1,6 +1,7 @@
 import { Component, type ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import logo from '@/assets/images/logo.svg'
+import { BRAND } from '@/lib/brand'
 
 // a render bug should not leave a blank page
 export class ErrorBoundary extends Component<{ children: ReactNode }, { error?: Error }> {
@@ -16,7 +17,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, { error?: 
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="w-[320px] rounded-[5px] bg-background-secondary p-2.5">
           <div className="flex w-full items-center justify-center">
-            <img src={logo} alt="n.eko" className="mr-2.5 h-[90px]" />
+            <img src={logo} alt={BRAND.name} className="mr-2.5 h-[90px]" />
             <span className="text-[30px] leading-14">
               <b className="font-black">n</b>.eko
             </span>
