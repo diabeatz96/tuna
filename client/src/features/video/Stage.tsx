@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import {
   ArrowsOutIcon,
   ClipboardIcon,
+  EyeSlashIcon,
   KeyboardIcon,
   MonitorIcon,
   MouseIcon,
@@ -36,7 +37,7 @@ export function Stage({ hideControls, extraControls }: { hideControls: boolean; 
   const { t } = useTranslation()
   const { client, overlay, app } = useNeko()
   const actions = useActions()
-  const { admin, hosting, hosted, implicit, lockedControls, video } = useStore(
+  const { admin, hosting, hosted, implicit, lockedControls, curtain, video } = useStore(
     client.store,
     useShallow((s) => ({
       admin: selectIsAdmin(s),
@@ -44,6 +45,8 @@ export function Stage({ hideControls, extraControls }: { hideControls: boolean; 
       hosted: s.control.host_id !== null,
       implicit: s.settings.implicit_hosting,
       lockedControls: s.settings.locked_controls,
+      // private mode pauses the stream of everyone but the admins
+      curtain: s.settings.private_mode && !selectIsAdmin(s),
       video: s.video,
     })),
   )
@@ -69,6 +72,16 @@ export function Stage({ hideControls, extraControls }: { hideControls: boolean; 
             ))}
             {!hideControls && <Reactions />}
           </div>
+          {curtain && (
+            <div
+              className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background-floating text-center"
+              data-testid="curtain-down"
+            >
+              <EyeSlashIcon className="size-12 text-text-muted" />
+              <span className="text-[18px] font-bold">{t('curtain.down')}</span>
+              <span className="text-text-muted">{t('curtain.down_hint')}</span>
+            </div>
+          )}
           {!playing && playable ? (
             <IconButton
               label="Play"

@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { useStore } from 'zustand'
 import { selectIsAdmin } from '@m1k1o/neko'
 import { useTranslation } from 'react-i18next'
-import { ListIcon, LockIcon, LockOpenIcon, MouseIcon } from '@phosphor-icons/react'
+import { EyeIcon, EyeSlashIcon, ListIcon, LockIcon, LockOpenIcon, MouseIcon } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import { useActions } from '@/state/actions'
 import { isLocked, type LockResource } from '@/state/app'
@@ -62,6 +62,21 @@ export function Header() {
         <span className="text-[30px] leading-7.5 font-black">{BRAND.name}</span>
       </a>
       <ul className="mr-2.5 whitespace-nowrap">
+        {admin && (
+          // the curtain: private mode in one tap, to type a login without everyone watching
+          <li className="mr-2.5 inline-block">
+            <IconButton
+              variant="header"
+              label={t(settings.private_mode ? 'curtain.raise' : 'curtain.lower')}
+              className={cn(settings.private_mode && 'text-style-error/50')}
+              data-testid="curtain"
+              data-down={settings.private_mode || undefined}
+              onClick={() => actions.setRoom('private_mode', !settings.private_mode)}
+            >
+              {settings.private_mode ? <EyeSlashIcon className="size-4" /> : <EyeIcon className="size-4" />}
+            </IconButton>
+          </li>
+        )}
         {lock('control', <MouseIcon className="size-4" />)}
         {lock(
           'login',

@@ -88,6 +88,12 @@
     "watching_since": "watching since {{time}}",
     "idle": "here, not watching"
   },
+  "curtain": {
+    "lower": "Lower the curtain (hide the screen from users)",
+    "raise": "Raise the curtain (show the screen again)",
+    "down": "The curtain is down",
+    "down_hint": "An admin is hiding the screen for a moment"
+  },
   "connection": {
     "reconnecting": "Reconnecting...",
     "connected": "Connected",

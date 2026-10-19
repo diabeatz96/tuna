@@ -23,6 +23,9 @@ services:
     shm_size: "2gb"
     ports:
       - "56000-56100:56000-56100/udp"
+      # WebRTC over TCP, for viewers whose network blocks the UDP ports
+      # (mobile data, strict Wi-Fi). Open it in the server's firewall too.
+      - "56200:56200/tcp"
     volumes:
       - ./media:/home/neko/Downloads
       # Keeps logins (Crunchyroll, Plex, YouTube) across restarts.
@@ -31,9 +34,27 @@ services:
     environment:
       NEKO_DESKTOP_SCREEN: "1920x1080@30"
       NEKO_WEBRTC_EPR: "56000-56100"
+      NEKO_WEBRTC_TCPMUX: "56200"
       NEKO_WEBRTC_NAT1TO1: "${PUBLIC_IP}"
       NEKO_MEMBER_MULTIUSER_USER_PASSWORD: "${TUNA_USER_PASSWORD}"
       NEKO_MEMBER_MULTIUSER_ADMIN_PASSWORD: "${TUNA_ADMIN_PASSWORD}"
+      # an admin token for the notifier below; empty turns the API session off
+      NEKO_SESSION_API_TOKEN: "${TUNA_API_TOKEN:-}"
+
+  # Posts to Discord when the room goes live (notify.py). Idles while
+  # DISCORD_WEBHOOK_URL or TUNA_API_TOKEN is unset.
+  notify:
+    image: python:3.13-alpine
+    restart: unless-stopped
+    command: ["python", "-u", "/notify.py"]
+    volumes:
+      - ./notify.py:/notify.py:ro
+    environment:
+      DISCORD_WEBHOOK_URL: "${DISCORD_WEBHOOK_URL:-}"
+      TUNA_API_TOKEN: "${TUNA_API_TOKEN:-}"
+      TUNA_URL: "${TUNA_URL:-}"
+    depends_on:
+      - tuna
 
 volumes:
   caddy_data:
