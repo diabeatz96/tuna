@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { PlayIcon, SquareIcon } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import { useActions } from '@/state/actions'
+import { ROOM_TOGGLES } from '@/state/app'
 import { useNeko } from '@/state/provider'
 import { setSetting } from '@/state/settings'
 import { Button } from '@/components/ui/button'
@@ -13,6 +14,47 @@ import { row, label } from './classes'
 
 const field =
   'block h-8 rounded-[5px] border border-transparent bg-background-tertiary leading-7.5 font-light text-ellipsis text-white'
+
+// the switch: the input, its track and its knob
+function Switch({ name, checked, onChange }: { name: string; checked: boolean; onChange: (on: boolean) => void }) {
+  return (
+    <label className="relative h-6 w-[42px] shrink-0">
+      <input
+        type="checkbox"
+        className="peer h-0 w-0 opacity-0"
+        aria-label={name}
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+      />
+      <span className="absolute inset-0 cursor-pointer rounded-[34px] bg-background-tertiary transition-all duration-200 peer-checked:bg-style-primary peer-focus-visible:outline-2 peer-focus-visible:outline-style-primary" />
+      <span className="absolute bottom-[3px] left-[3px] h-[18px] w-[18px] cursor-pointer rounded-full bg-white shadow-[0_2px_4px_rgba(0,0,0,0.3)] transition-all duration-300 peer-checked:translate-x-[18px]" />
+    </label>
+  )
+}
+
+// the room settings an admin switches for everyone, each with a line saying what it does
+function Room() {
+  const { t } = useTranslation()
+  const { client } = useNeko()
+  const actions = useActions()
+  const room = useStore(client.store, (s) => s.settings)
+  return (
+    <li className={cn(row, 'flex-col whitespace-normal')} data-testid="room-settings">
+      <span className={cn(label, 'mb-[5px] font-bold')}>{t('room.title')}</span>
+      <ul>
+        {ROOM_TOGGLES.map((k) => (
+          <li key={k} className="flex items-center gap-2.5 py-[5px]" data-testid={`room-${k}`}>
+            <div className="mr-auto">
+              <div className="leading-6">{t(`room.${k}`)}</div>
+              <div className="text-[12px] leading-4 text-text-muted">{t(`room.${k}_hint`)}</div>
+            </div>
+            <Switch name={t(`room.${k}`)} checked={room[k]} onChange={(on) => actions.setRoom(k, on)} />
+          </li>
+        ))}
+      </ul>
+    </li>
+  )
+}
 
 export function Settings() {
   const { t } = useTranslation()
@@ -38,23 +80,12 @@ export function Settings() {
   useEffect(() => setUrl(broadcast.url), [broadcast.url])
 
   const toggle = (
-    key: 'scroll_invert' | 'autoplay' | 'ignore_emotes' | 'chat_sound' | 'links_in_app',
+    key: 'scroll_invert' | 'autoplay' | 'ignore_emotes' | 'chat_sound' | 'join_sound' | 'links_in_app',
     name: string,
   ) => (
     <li className={row}>
       <span className={label}>{t(`setting.${name}`)}</span>
-      {/* the switch: the input, its track and its knob */}
-      <label className="relative h-6 w-[42px]">
-        <input
-          type="checkbox"
-          className="peer h-0 w-0 opacity-0"
-          aria-label={t(`setting.${name}`)}
-          checked={s[key]}
-          onChange={(e) => setSetting(neko, key, e.target.checked)}
-        />
-        <span className="absolute inset-0 cursor-pointer rounded-[34px] bg-background-tertiary transition-all duration-200 peer-checked:bg-style-primary" />
-        <span className="absolute bottom-[3px] left-[3px] h-[18px] w-[18px] cursor-pointer rounded-full bg-white shadow-[0_2px_4px_rgba(0,0,0,0.3)] transition-all duration-300 peer-checked:translate-x-[18px]" />
-      </label>
+      <Switch name={t(`setting.${name}`)} checked={s[key]} onChange={(on) => setSetting(neko, key, on)} />
     </li>
   )
 
@@ -79,6 +110,7 @@ export function Settings() {
         {toggle('autoplay', 'autoplay')}
         {toggle('ignore_emotes', 'ignore_emotes')}
         {toggle('chat_sound', 'chat_sound')}
+        {toggle('join_sound', 'join_sound')}
         {openInApp && toggle('links_in_app', 'links_in_app')}
         <li className={row}>
           <span className={label}>{t('setting.keyboard_layout')}</span>
@@ -133,6 +165,7 @@ export function Settings() {
             />
           </li>
         )}
+        {admin && <Room />}
         <li className={row}>
           <Button className="my-[5px] w-full" data-testid="logout" onClick={actions.logout}>
             {t('logout')}

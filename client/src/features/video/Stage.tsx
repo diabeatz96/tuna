@@ -20,6 +20,7 @@ import { IconButton } from '@/components/IconButton'
 import { DropdownMenu, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Popover, PopoverTrigger } from '@/components/ui/popover'
 import { Emote } from '@/features/emotes/Emote'
+import { Reactions } from '@/features/emotes/Reactions'
 import { Resolution } from './Resolution'
 import { Clipboard } from './Clipboard'
 import { Player } from './Player'
@@ -66,6 +67,7 @@ export function Stage({ hideControls, extraControls }: { hideControls: boolean; 
             {Object.entries(emotes).map(([id, type]) => (
               <Emote key={id} id={id} type={type} />
             ))}
+            {!hideControls && <Reactions />}
           </div>
           {!playing && playable ? (
             <IconButton
@@ -111,8 +113,9 @@ export function Stage({ hideControls, extraControls }: { hideControls: boolean; 
                 </DropdownMenu>
               </li>
             )}
-            {!controlLocked && !implicit && (
-              <li className={cn('mb-2.5 last:mb-0', extra)}>
+            {/* only in the video-only layouts: everywhere else the room bar has it, a phone's too */}
+            {!controlLocked && !implicit && extraControls && (
+              <li className="mb-2.5 last:mb-0">
                 <IconButton
                   variant="video"
                   label={hosting ? t('controls.release') : t('controls.request')}

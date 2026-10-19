@@ -8,6 +8,7 @@ import type { NekoClient, Overlay, Settings, State } from '@m1k1o/neko'
 import { get } from './storage'
 import type { Dialog } from './dialogs'
 import type { Bus } from './bus'
+import type { Reaction } from './emotes'
 import { t } from '@/i18n'
 
 export const defaults = {
@@ -17,6 +18,8 @@ export const defaults = {
   autoplay: true,
   ignore_emotes: false,
   chat_sound: true,
+  // a short chime when someone joins or leaves (state/sound.ts)
+  join_sound: false,
   // open chat links on the remote desktop instead of locally (needs the openinapp plugin)
   links_in_app: false,
   keyboard_layout: 'us',
@@ -40,6 +43,8 @@ export function createAppStore() {
     // openinapp/init: links can be opened on the remote desktop
     openInApp: false,
     emotes: {} as Record<string, string>,
+    // who sent which emote lately, the tally over the video (state/emotes.ts)
+    reactions: [] as Reaction[],
     ignored: {} as Record<string, boolean>,
     broadcast: { active: false, url: '' },
     keyboardLayouts: {} as Record<string, string>,
@@ -79,3 +84,8 @@ export const isMuted = (client: NekoClient, id?: string | null) => selectMuted(c
 export type LockResource = 'login' | 'control'
 export const isLocked = (r: LockResource, settings: Settings) =>
   r === 'login' ? settings.locked_logins : settings.locked_controls
+
+// the room settings an admin switches in the settings tab (the locks are in the header);
+// inactive_cursors is left out because this client does not draw the other cursors
+export const ROOM_TOGGLES = ['private_mode', 'control_protection', 'implicit_hosting', 'merciful_reconnect'] as const
+export type RoomToggle = (typeof ROOM_TOGGLES)[number]

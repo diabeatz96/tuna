@@ -139,7 +139,8 @@ export function Controls() {
           </label>
         </li>
       )}
-      <li>
+      {/* not on a phone: the play button over the video does it, and the bar has no room */}
+      <li className="phone:hidden">
         <IconButton
           label={playing ? 'Pause' : 'Play'}
           className={cn('px-[5px]', !playable && 'text-style-error/40')}
@@ -171,9 +172,10 @@ export function Controls() {
           >
             {volume === 0 || muted ? <SpeakerSlashIcon className="size-6" /> : <SpeakerHighIcon className="size-6" />}
           </IconButton>
+          {/* a phone's volume is its buttons; mute stays */}
           <input
             type="range"
-            className="slider h-5 w-[150px]"
+            className="slider phone:hidden h-5 w-[150px]"
             min="0"
             max="100"
             aria-label="Volume"

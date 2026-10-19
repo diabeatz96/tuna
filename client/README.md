@@ -113,7 +113,11 @@ stylesheet per component. `src/index.css` is the whole of the CSS:
 - **Global rules** the preflight does not have: the page's size and overflow, 14px text with line-height 1
   on `body` (so `rem`, the base of Tailwind's spacing scale, stays 16px), no native video controls.
 - **Breakpoints** as variants: `tablet:` (up to 1024px: the page scrolls and the side panel goes under the
-  video, with Tailwind's `portrait:` / `landscape:` for the split), `phone:` (up to 768px: no room bar).
+  video, with Tailwind's `portrait:` / `landscape:` for the split), `phone:` (up to 768px: the room bar is
+  one compact row under the members; upright with the side panel open, the page is one screen: the video
+  at 16:9, then the side panel fills the rest) and `short:` (landscape under 500px tall, a phone on its
+  side: the room bar's row only, so the video gets the height). Heights are `dvh`, so a phone's browser
+  bars and on-screen keyboard resize the layout instead of covering it.
 - The animations (`animate-shake`, `animate-loader`, `animate-badge`) and the `slider` utility (the range
   inputs).
 

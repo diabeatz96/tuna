@@ -1,10 +1,11 @@
 // event wiring: turn v3 events into event lines (shown by the chat) and toasts
 import type { Settings } from '@m1k1o/neko'
-import { isLocked, name, type LockResource, type NekoApp } from './app'
+import { isLocked, name, ROOM_TOGGLES, type LockResource, type NekoApp } from './app'
 import { actions } from './actions'
 import { toast, tell, dismissToasts } from './dialogs'
 import { event } from './bus'
 import { EMOTES, showEmote } from './emotes'
+import { chime } from './sound'
 import { t } from '@/i18n'
 
 // once per instance (createNekoApp), before the connection
@@ -37,6 +38,7 @@ export function wireEvents(neko: NekoApp) {
     const now = !!sess?.state.is_connected
     if (now !== !!known[id]?.connected && id !== client.state.session_id) {
       event(neko, id, t(now ? 'notifications.connected' : 'notifications.disconnected', { name: '' }))
+      if (app.getState().settings.join_sound) chime(now)
     }
     known[id] = { connected: now, name: sess?.profile.name ?? known[id]?.name ?? '' }
   }
@@ -44,7 +46,10 @@ export function wireEvents(neko: NekoApp) {
   ev.on('session.updated', onSession)
   ev.on('session.deleted', (id) => {
     const k = known[id]
-    if (k?.connected) bus.emit('log', id, k.name || t('somebody'), t('notifications.disconnected', { name: '' }))
+    if (k?.connected) {
+      bus.emit('log', id, k.name || t('somebody'), t('notifications.disconnected', { name: '' }))
+      if (app.getState().settings.join_sound) chime(false)
+    }
     delete known[id]
   })
 
@@ -93,6 +98,9 @@ export function wireEvents(neko: NekoApp) {
         if (locked !== isLocked(r, lastSettings))
           event(neko, id, t(`locks.${r}.notif_${locked ? 'locked' : 'unlocked'}`))
       }
+      for (const k of ROOM_TOGGLES)
+        if (next[k] !== lastSettings[k])
+          event(neko, id, t(`room.notif_${next[k] ? 'on' : 'off'}`, { setting: t(`room.${k}`) }))
     }
     lastSettings = { ...next, plugins: { ...next.plugins } }
   })
@@ -104,7 +112,7 @@ export function wireEvents(neko: NekoApp) {
 
   ev.on('receive.broadcast', (sender, subject, body) => {
     // other clients may send anything; only known names become class names on screen
-    if (subject === 'emote' && EMOTES.includes(body) && !app.getState().ignored[sender]) showEmote(app, body)
+    if (subject === 'emote' && EMOTES.includes(body) && !app.getState().ignored[sender]) showEmote(app, body, sender)
   })
 
   // plugin events (`chat/*`, ...) are dispatched by the plugin registry

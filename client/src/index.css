@@ -84,6 +84,18 @@
       transform: scale(1);
     }
   }
+  /* a reaction line appearing, and its count growing */
+  --animate-pop: pop 0.25s ease-out;
+  @keyframes pop {
+    0% {
+      transform: scale(0.6);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
   /* the unread badge on the side panel toggle */
   --animate-badge: badge 2s infinite;
   @keyframes badge {
@@ -102,8 +114,10 @@
   }
 }
 
-/* the layout's two breakpoints: under 1024px the page scrolls and the side panel goes under the
-   video (with Tailwind's portrait: and landscape: for the split), under 768px the room bar is hidden */
+/* the layout's breakpoints: under 1024px the page scrolls and the side panel goes under the
+   video (with Tailwind's portrait: and landscape: for the split), under 768px the room bar is a
+   compact row and an upright phone with the side panel open is one screen (App.tsx), and a short
+   landscape screen keeps only that row */
 @custom-variant tablet {
   @media only screen and (max-width: 1024px) {
     @slot;
@@ -111,6 +125,12 @@
 }
 @custom-variant phone {
   @media only screen and (max-width: 768px) {
+    @slot;
+  }
+}
+/* a phone on its side: wider than `phone`, too short for the full room bar under the video */
+@custom-variant short {
+  @media only screen and (orientation: landscape) and (max-height: 500px) {
     @slot;
   }
 }

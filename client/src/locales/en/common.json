@@ -65,9 +65,28 @@
     "autoplay": "Autoplay Video",
     "ignore_emotes": "Ignore Emotes",
     "chat_sound": "Play Chat Sound",
+    "join_sound": "Play Join/Leave Sound",
     "links_in_app": "Always open links in app",
     "keyboard_layout": "Keyboard Layout",
     "broadcast_title": "Live Broadcast"
+  },
+  "room": {
+    "title": "Room",
+    "private_mode": "Private mode",
+    "private_mode_hint": "Only admins see the screen",
+    "control_protection": "Control protection",
+    "control_protection_hint": "Users can take control only while an admin is here",
+    "implicit_hosting": "Implicit hosting",
+    "implicit_hosting_hint": "Anyone can use the screen without requesting control",
+    "merciful_reconnect": "Merciful reconnect",
+    "merciful_reconnect_hint": "A new connection replaces an old one instead of being refused",
+    "notif_on": "turned on {{setting}}",
+    "notif_off": "turned off {{setting}}"
+  },
+  "presence": {
+    "watching": "watching",
+    "watching_since": "watching since {{time}}",
+    "idle": "here, not watching"
   },
   "connection": {
     "reconnecting": "Reconnecting...",

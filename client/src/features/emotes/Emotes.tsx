@@ -47,7 +47,7 @@ export function Emotes() {
     <div className="mr-2.5 self-center justify-self-end" onMouseLeave={stop} onMouseUp={stop}>
       <ul className="flex items-center justify-center">
         {recent.map((e) => (
-          <li key={e} className="mx-[5px] text-[24px]">
+          <li key={e} className="phone:hidden mx-[5px] text-[24px]">
             <IconButton
               label={e}
               className={`emote ${e}`}

@@ -23,7 +23,7 @@ export function RoomMenu() {
           <QuestionIcon className="size-6" />
         </IconButton>
       </li>
-      <li className="mr-2.5 inline-block align-middle">
+      <li className="phone:hidden mr-2.5 inline-block align-middle">
         {admin && (
           <span className="inline-block" data-testid="admin-badge" title={t('admin_loggedin')}>
             <ShieldIcon className="size-6" role="img" aria-label={t('admin_loggedin')} />

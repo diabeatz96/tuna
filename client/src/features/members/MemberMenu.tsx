@@ -29,8 +29,9 @@ function Item({ entry, member }: { entry: PluginMemberMenuItem; member: Session 
   return <ContextMenuItem onSelect={() => entry.onClick(neko, member)}>{entry.label(neko, member)}</ContextMenuItem>
 }
 
-// rendered by App outside the room bar, which is hidden at narrow widths where the chat still works;
-// opened at the point of a right-click (members, chat authors) or under a focused member (Shift+F10)
+// rendered by App outside the room bar, which a short landscape screen hides the members of while the
+// chat still works; opened at the point of a click or right-click (members), a right-click (chat
+// authors) or under a focused member (Shift+F10)
 export function MemberMenu({ items }: { items: readonly PluginMemberMenuItem[] }) {
   const { t } = useTranslation()
   const { client, app } = useNeko()

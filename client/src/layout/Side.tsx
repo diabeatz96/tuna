@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { useStore } from 'zustand'
 import { useTranslation } from 'react-i18next'
 import { SlidersHorizontalIcon } from '@phosphor-icons/react'
@@ -21,10 +20,6 @@ const always = () => true
 
 export function Side() {
   const tabs = [...useSlot('side.tab'), settingsTab]
-  useEffect(() => {
-    document.querySelector('aside')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }, [])
-
   return (
     <EachHook items={tabs} use={(tab) => tab.useVisible ?? always}>
       {(visible) => <Panel tabs={tabs.filter((_, i) => visible[i])} />}
@@ -44,7 +39,7 @@ function Panel({ tabs }: { tabs: PluginTab[] }) {
   return (
     <Tabs value={tab} onValueChange={(id) => (app.setState({ tab: id }), remember('tab', id))} asChild>
       <aside
-        className="tablet:w-full tablet:portrait:h-[60vh] tablet:landscape:h-screen flex max-h-full w-side max-w-full shrink-0 flex-col bg-background-primary"
+        className="tablet:w-full tablet:portrait:h-[60dvh] tablet:landscape:h-dvh phone:portrait:h-auto phone:portrait:min-h-0 phone:portrait:flex-1 flex max-h-full w-side max-w-full shrink-0 flex-col bg-background-primary"
         data-testid="side"
       >
         <TabsList data-testid="tabs">

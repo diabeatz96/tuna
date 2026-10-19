@@ -52,14 +52,22 @@ export function App() {
   return (
     // every icon filled, as in the v2 client (phosphor defaults to the outline `regular` weight)
     <IconContext.Provider value={{ weight: 'fill' }}>
+      {/* dvh, not vh: a phone's browser bars come and go and the on-screen keyboard resizes it.
+          A phone upright with the side panel open is one screen without scrolling: the header,
+          the video at 16:9 and the room bar, then the side panel takes what is left */}
       <div
         id="neko"
-        className="tablet:relative tablet:max-h-none tablet:flex-col absolute inset-0 flex max-h-[100vh] max-w-[100vw]"
+        className={cn(
+          'tablet:relative tablet:max-h-none tablet:flex-col absolute inset-0 flex max-h-dvh max-w-[100vw]',
+          expanded && 'phone:portrait:h-dvh phone:portrait:overflow-hidden',
+        )}
       >
         <main
           className={cn(
-            'flex min-w-[360px] max-w-full grow flex-col overflow-auto',
-            expanded ? 'tablet:portrait:h-[40vh] tablet:landscape:h-screen' : 'tablet:h-screen',
+            'phone:min-w-0 flex min-w-[360px] max-w-full grow flex-col overflow-auto',
+            expanded
+              ? 'tablet:portrait:h-[40dvh] tablet:landscape:h-dvh phone:portrait:h-auto phone:portrait:shrink-0 phone:portrait:grow-0'
+              : 'tablet:h-dvh',
           )}
         >
           {!videoOnly && (
@@ -68,7 +76,12 @@ export function App() {
             </div>
           )}
           {/* .video-container: index.html sizes it before the app renders (iOS) */}
-          <div className="video-container flex max-w-full grow bg-black/40">
+          <div
+            className={cn(
+              'video-container flex max-w-full grow bg-black/40',
+              expanded && 'phone:portrait:aspect-video phone:portrait:h-auto phone:portrait:grow-0',
+            )}
+          >
             <Stage hideControls={cast} extraControls={videoOnly} />
           </div>
           {!videoOnly && <RoomBar />}

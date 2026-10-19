@@ -100,6 +100,12 @@ function Toggle({ side, unread }: { side: boolean; unread: number }) {
           app.setState({ side: !side })
           remember('side', !side)
           setRead(unread)
+          // where the panel goes under the video (tablet), show it once it is there; only when opened
+          // by hand, so a page loaded with the panel open still starts at the video
+          if (!side)
+            requestAnimationFrame(() =>
+              document.querySelector('aside')?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+            )
         }}
       >
         <ListIcon className="size-4" />
