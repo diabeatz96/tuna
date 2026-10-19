@@ -18,6 +18,7 @@ services:
 
   tuna:
     image: ghcr.io/diabeatz96/tuna:latest
+    hostname: tuna
     restart: unless-stopped
     shm_size: "2gb"
     ports:

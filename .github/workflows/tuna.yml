@@ -6,6 +6,7 @@ on:
     paths:
       - "client/**"
       - "deploy/Dockerfile"
+      - "deploy/brave-launch.sh"
       - ".github/workflows/tuna.yml"
   workflow_dispatch:
 
