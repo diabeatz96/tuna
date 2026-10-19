@@ -38,9 +38,7 @@ export function App() {
         <div className="w-[320px] rounded-[5px] bg-background-secondary p-2.5">
           <div className="flex w-full items-center justify-center">
             <img src={logo} alt={BRAND.name} className="mr-2.5 h-[90px]" />
-            <span className="text-[30px] leading-14">
-              <b className="font-black">n</b>.eko
-            </span>
+            <span className="text-[30px] leading-14 font-black">{BRAND.name}</span>
           </div>
           <div className="flex flex-col">
             <span className="block text-center leading-7.5 uppercase">{t('unsupported')}</span>

@@ -27,11 +27,15 @@ export function About() {
             </div>
             <p className="mb-[15px]">{BRAND.tagline}</p>
             <p className="mb-[15px] text-[13px] text-text-muted">
-              Based on{' '}
+              Made by{' '}
+              <a className="text-text-link" href={BRAND.authorUrl} target="_blank" rel="noopener noreferrer">
+                {BRAND.author}
+              </a>
+              . Based on{' '}
               <a className="text-text-link" href={BRAND.upstreamUrl} target="_blank" rel="noopener noreferrer">
                 {BRAND.upstreamName}
               </a>{' '}
-              by m1k1o.
+              by m1k1o and its contributors.
             </p>
             <p className="mb-[15px]">
               <a className="mx-2.5 text-text-link" href={BRAND.repoUrl} target="_blank" rel="noopener noreferrer">

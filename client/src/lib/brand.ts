@@ -5,6 +5,8 @@ export const BRAND = {
   tagline: 'A self hosted virtual browser for watching and browsing together.',
   repo: 'diabeatz96/tuna',
   repoUrl: 'https://github.com/diabeatz96/tuna',
+  author: 'Adam Kostandy',
+  authorUrl: 'https://github.com/diabeatz96',
   upstreamName: 'n.eko',
   upstreamRepo: 'm1k1o/neko',
   upstreamUrl: 'https://github.com/m1k1o/neko',

@@ -52,16 +52,14 @@ export function Header() {
   return (
     <div className="flex flex-1 flex-row items-center">
       <a
-        href="https://github.com/m1k1o/neko"
+        href={BRAND.repoUrl}
         title="Github repository"
         target="_blank"
         rel="noreferrer"
         className="ml-5 flex w-[150px] flex-1 items-center justify-start"
       >
         <img src={logo} alt={BRAND.name} className="mr-2.5 block h-7.5" />
-        <span className="text-[30px] leading-7.5">
-          <b className="font-black">n</b>.eko
-        </span>
+        <span className="text-[30px] leading-7.5 font-black">{BRAND.name}</span>
       </a>
       <ul className="mr-2.5 whitespace-nowrap">
         {lock('control', <MouseIcon className="size-4" />)}

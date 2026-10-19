@@ -1,35 +1,29 @@
 <div align="center">
-  <a href="https://github.com/m1k1o/neko" title="Neko's Github repository.">
-    <img src="https://neko.m1k1o.net/img/logo.png" width="400" height="auto"/>
-  </a>
+  <img src="client/public/android-chrome-512x512.png" width="160" height="160" alt="Tuna"/>
   <p align="center">
-    <a href="https://github.com/m1k1o/neko/releases">
-      <img src="https://img.shields.io/github/v/release/m1k1o/neko" alt="release">
+    <a href="https://github.com/diabeatz96/tuna/actions/workflows/tuna.yml">
+      <img src="https://github.com/diabeatz96/tuna/actions/workflows/tuna.yml/badge.svg?branch=tuna" alt="image build">
     </a>
-    <a href="https://github.com/m1k1o/neko/blob/master/LICENSE">
-      <img src="https://img.shields.io/github/license/m1k1o/neko" alt="license">
-    </a>
-    <a href="https://hub.docker.com/r/m1k1o/neko">
-      <img src="https://img.shields.io/docker/pulls/m1k1o/neko" alt="pulls">
-    </a>
-    <a href="https://github.com/m1k1o/neko/issues">
-      <img src="https://img.shields.io/github/issues/m1k1o/neko" alt="issues">
-    </a>
-    <a href="https://github.com/sponsors/m1k1o">
-      <img src="https://img.shields.io/badge/-sponsor-red" alt="issues">
-    </a>
-    <a href="https://discord.gg/HXQJmqNJMz">
-      <img src="https://discordapp.com/api/guilds/665851821906067466/widget.png" alt="Chat on discord">
-    </a>
-    <a href="https://hellogithub.com/repository/4536d4546af24196af3f08a023dfa007" target="_blank">
-      <img src="https://abroad.hellogithub.com/v1/widgets/recommend.svg?rid=4536d4546af24196af3f08a023dfa007&claim_uid=0x19e4dJwD83aW2&theme=small" alt="Featured｜HelloGitHub" />
-    </a>
-    <a href="https://github.com/m1k1o/neko/actions">
-      <img src="https://github.com/m1k1o/neko/actions/workflows/ghcr.yml/badge.svg" alt="build">
+    <a href="https://github.com/diabeatz96/tuna/blob/tuna/LICENSE">
+      <img src="https://img.shields.io/github/license/diabeatz96/tuna" alt="license">
     </a>
   </p>
-  <img src="https://neko.m1k1o.net/img/intro.gif" width="650" height="auto"/>
 </div>
+
+# Tuna
+
+Tuna is a self hosted virtual browser for watching and browsing together, named after my cat. It is a fork of [n.eko](https://github.com/m1k1o/neko) with its own client branding and a Brave based image with a persistent browser profile.
+
+- Image: `ghcr.io/diabeatz96/tuna`, built from the `tuna` branch by [.github/workflows/tuna.yml](.github/workflows/tuna.yml)
+- Deploy files: [deploy/](deploy) (Docker Compose, Caddy, an example `.env`)
+- Configuration: Tuna keeps upstream's `NEKO_*` environment variables and API, so the [n.eko documentation](https://neko.m1k1o.net/) applies
+
+## Credits
+
+- Tuna by [Adam Kostandy](https://github.com/diabeatz96)
+- Built on [n.eko](https://github.com/m1k1o/neko) by [m1k1o](https://github.com/m1k1o) and [its contributors](https://github.com/m1k1o/neko/graphs/contributors), which itself started from [nurdism/neko](https://github.com/nurdism/neko). Licensed under [Apache-2.0](LICENSE).
+
+The rest of this README is upstream's description of n.eko.
 
 # n.eko
 
