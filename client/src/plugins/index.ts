@@ -13,6 +13,7 @@ const slots: { [K in keyof Slots]: Slots[K][] } = {
   'side.tab': [],
   'header.item': [],
   'room.item': [],
+  'video.overlay': [],
   'member.menu': [],
 }
 let filled = false
@@ -33,6 +34,7 @@ export function initPlugins(neko: NekoApp) {
       if (p.tab) registerSlot('side.tab', p.tab)
       for (const item of p.topBar ?? []) registerSlot('header.item', item)
       for (const item of p.roomBar ?? []) registerSlot('room.item', item)
+      for (const item of p.overlay ?? []) registerSlot('video.overlay', item)
       for (const item of p.memberMenu ?? []) registerSlot('member.menu', item)
     }
   }

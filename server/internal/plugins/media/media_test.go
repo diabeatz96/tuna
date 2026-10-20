@@ -101,7 +101,7 @@ func TestReadFindsTheVideoInTheVisibleTabsFrame(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := State{Found: true, Paused: true, Time: 42, Duration: 1440, Title: "Frieren - Episode 12"}
+	want := State{Found: true, Paused: true, Time: 42, Duration: 1440, Title: "Frieren - Episode 12", Site: "b.example"}
 	if state != want {
 		t.Errorf("state = %+v, want %+v", state, want)
 	}

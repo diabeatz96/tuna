@@ -31,6 +31,7 @@ export function App() {
     useShallow((s) => ({ side: s.side, about: s.about })),
   )
   const memberMenu = useSlot('member.menu')
+  const overlays = useSlot('video.overlay')
 
   if (!WebRTCTransport.supported()) {
     return (
@@ -82,7 +83,7 @@ export function App() {
               expanded && 'phone:portrait:aspect-video phone:portrait:h-auto phone:portrait:grow-0',
             )}
           >
-            <Stage hideControls={cast} extraControls={videoOnly} />
+            <Stage hideControls={cast} extraControls={videoOnly} overlays={overlays} />
           </div>
           {!videoOnly && <RoomBar />}
         </main>

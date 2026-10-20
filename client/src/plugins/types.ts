@@ -20,6 +20,8 @@ export interface Plugin {
   topBar?: PluginTopBarItem[]
   // items in the room bar, next to the controls
   roomBar?: PluginTopBarItem[]
+  // layers over the video (no pointer events but on what they render with pointer-events-auto)
+  overlay?: PluginTopBarItem[]
   memberMenu?: PluginMemberMenuItem[]
   // its server events, typed by PluginEvents; the rest parameter narrows the payload on the event:
   // `onEvent(neko, ...[event, payload]) { if (event === 'chat/init') store.setState({ enabled: payload.enabled }) }`
@@ -49,6 +51,47 @@ export interface PluginEvents {
   // Tuna's server: room-wide play, pause and seek of the video in the browser
   'media/init': { enabled: boolean }
   'media/state': MediaState
+  'media/ready': ReadyCheck
+  'media/predict': PredictRound
+  'media/diary': DiaryEntry & { deleted?: boolean }
+  'media/rate': { id: string; title: string }
+}
+
+// the ready check: session ids of who is ready and who is not; go_at (Unix ms) once everyone is
+export interface ReadyCheck {
+  active: boolean
+  by?: string
+  ready: string[]
+  waiting: string[]
+  go_at?: number
+}
+
+export interface Prediction {
+  name: string
+  text: string
+}
+
+// a prediction round as this member may see it; an empty id: no round
+export interface PredictRound {
+  id: string
+  title: string
+  by: string
+  revealed: boolean
+  names: string[]
+  mine: string
+  entries?: Prediction[]
+}
+
+// something the room watched (GET /api/media/diary, newest first)
+export interface DiaryEntry {
+  id: string
+  title: string
+  site: string
+  date: string
+  minutes: number
+  attendees: string[]
+  ratings: Record<string, number>
+  predictions?: Prediction[]
 }
 
 export interface MediaState {
@@ -57,6 +100,7 @@ export interface MediaState {
   time: number
   duration: number // 0 for a live stream
   title: string
+  site?: string
   // the member who changed it and what they did ("play", "pause", "toggle", "seek")
   by?: string
   action?: string
@@ -69,6 +113,7 @@ export interface Slots {
   'side.tab': PluginTab
   'header.item': PluginTopBarItem
   'room.item': PluginTopBarItem
+  'video.overlay': PluginTopBarItem
   'member.menu': PluginMemberMenuItem
 }
 

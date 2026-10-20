@@ -1,14 +1,20 @@
 import { createStore } from 'zustand/vanilla'
 import { scoped, type NekoApp } from '@/state/app'
-import type { MediaState } from '@/plugins/types'
+import type { DiaryEntry, MediaState, PredictRound, ReadyCheck } from '@/plugins/types'
 
 // the video in the room's browser, as the server last reported it, and when it arrived (to count
-// the time on while it plays)
+// the time on while it plays); and the watch party around it: the ready check (go_at, while the
+// countdown runs), the prediction round, the diary and a rating asked for
 export const media = scoped(() =>
   createStore(() => ({
     enabled: false,
     state: null as MediaState | null,
     at: 0,
+    ready: null as ReadyCheck | null,
+    goAt: 0,
+    predict: null as PredictRound | null,
+    diary: [] as DiaryEntry[],
+    rate: null as { id: string; title: string } | null,
   })),
 )
 

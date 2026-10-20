@@ -3,10 +3,11 @@ import { useStore } from 'zustand'
 import { useShallow } from 'zustand/react/shallow'
 import { selectIsAdmin, selectSession } from '@m1k1o/neko'
 import { useTranslation } from 'react-i18next'
-import { FastForwardIcon, PauseIcon, PlayIcon, RewindIcon } from '@phosphor-icons/react'
+import { FastForwardIcon, HandPalmIcon, PauseIcon, PlayIcon, RewindIcon } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import { useNeko } from '@/state/provider'
 import { IconButton } from '@/components/IconButton'
+import { readyStart } from './party'
 import { clock, control, media, now } from './store'
 
 const SKIP = 10 // seconds per back / forward
@@ -16,9 +17,9 @@ const SKIP = 10 // seconds per back / forward
 export function RoomControls() {
   const { t } = useTranslation()
   const neko = useNeko()
-  const { enabled, state, at } = useStore(
+  const { enabled, state, at, readyActive } = useStore(
     media(neko),
-    useShallow((s) => ({ enabled: s.enabled, state: s.state, at: s.at })),
+    useShallow((s) => ({ enabled: s.enabled, state: s.state, at: s.at, readyActive: !!s.ready?.active })),
   )
   // the server's rule: admins, or members who may host while the controls are not locked
   const allowed = useStore(
@@ -42,6 +43,16 @@ export function RoomControls() {
       title={state.title}
       data-testid="room-controls"
     >
+      {allowed && !readyActive && (
+        <IconButton
+          label={t('party.ready_start')}
+          className="px-[5px]"
+          data-testid="ready-start"
+          onClick={() => readyStart(neko)}
+        >
+          <HandPalmIcon className="size-5" />
+        </IconButton>
+      )}
       <IconButton
         label={t('media.back', { s: SKIP })}
         className={cn(button, 'phone:hidden')}

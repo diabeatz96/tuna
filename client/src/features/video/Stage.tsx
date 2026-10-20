@@ -23,6 +23,7 @@ import { IconButton } from '@/components/IconButton'
 import { DropdownMenu, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Popover, PopoverTrigger } from '@/components/ui/popover'
 import { sendPing } from '@/state/pings'
+import type { PluginTopBarItem } from '@/plugins/types'
 import { setSetting } from '@/state/settings'
 import { Emote } from '@/features/emotes/Emote'
 import { Reactions } from '@/features/emotes/Reactions'
@@ -40,7 +41,16 @@ import { usePip } from './usePip'
 const overlayClasses =
   'absolute inset-0 flex cursor-pointer items-center justify-center overflow-hidden rounded-none bg-black/20'
 
-export function Stage({ hideControls, extraControls }: { hideControls: boolean; extraControls: boolean }) {
+export function Stage({
+  hideControls,
+  extraControls,
+  overlays = [],
+}: {
+  hideControls: boolean
+  extraControls: boolean
+  // the plugins' layers over the video (the ready check, a rating card)
+  overlays?: readonly PluginTopBarItem[]
+}) {
   const { t } = useTranslation()
   const neko = useNeko()
   const { client, overlay, app } = neko
@@ -115,6 +125,7 @@ export function Stage({ hideControls, extraControls }: { hideControls: boolean; 
             {!hideControls && <Mascot />}
             {!hideControls && <Reactions />}
             <Pings stage={player} />
+            {!hideControls && overlays.map(({ id, component: Layer }) => <Layer key={id} />)}
           </div>
           {curtain && (
             <div

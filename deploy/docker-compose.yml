@@ -31,6 +31,9 @@ services:
       # Keeps logins (Crunchyroll, Plex, YouTube) across restarts.
       # Must be owned by uid 1000: mkdir -p profile && chown 1000:1000 profile
       - ./profile:/home/neko/.config/brave
+      # The watch diary (ratings, predictions, the awards' data).
+      # Must be owned by uid 1000: mkdir -p data && chown 1000:1000 data
+      - ./data:/home/neko/.local/share/tuna
     environment:
       NEKO_DESKTOP_SCREEN: "1920x1080@30"
       NEKO_WEBRTC_EPR: "56000-56100"
