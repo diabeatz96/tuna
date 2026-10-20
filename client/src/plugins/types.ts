@@ -18,6 +18,8 @@ export interface Plugin {
   ns: string
   tab?: PluginTab
   topBar?: PluginTopBarItem[]
+  // items in the room bar, next to the controls
+  roomBar?: PluginTopBarItem[]
   memberMenu?: PluginMemberMenuItem[]
   // its server events, typed by PluginEvents; the rest parameter narrows the payload on the event:
   // `onEvent(neko, ...[event, payload]) { if (event === 'chat/init') store.setState({ enabled: payload.enabled }) }`
@@ -44,6 +46,20 @@ export interface PluginEvents {
   }
   // no GUI plugin of its own: state/events.ts turns it into app.openInApp
   'openinapp/init': { enabled: boolean }
+  // Tuna's server: room-wide play, pause and seek of the video in the browser
+  'media/init': { enabled: boolean }
+  'media/state': MediaState
+}
+
+export interface MediaState {
+  found: boolean
+  paused: boolean
+  time: number
+  duration: number // 0 for a live stream
+  title: string
+  // the member who changed it and what they did ("play", "pause", "toggle", "seek")
+  by?: string
+  action?: string
 }
 // `[event, payload]` of one PluginEvents entry
 export type PluginEventArgs = { [K in keyof PluginEvents]: [event: K, payload: PluginEvents[K]] }[keyof PluginEvents]
@@ -52,6 +68,7 @@ export type PluginEventArgs = { [K in keyof PluginEvents]: [event: K, payload: P
 export interface Slots {
   'side.tab': PluginTab
   'header.item': PluginTopBarItem
+  'room.item': PluginTopBarItem
   'member.menu': PluginMemberMenuItem
 }
 

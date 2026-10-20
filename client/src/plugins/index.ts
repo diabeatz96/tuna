@@ -3,12 +3,18 @@ import type { Plugin, PluginEventArgs, Slots } from './types'
 import { chat } from './chat'
 import { filetransfer } from './filetransfer'
 import { bingo } from './bingo'
+import { media } from './media'
 
 // the plugins of this build, in side-panel order; adding one is its folder plus a line here
-export const plugins: Plugin[] = [chat, filetransfer, bingo]
+export const plugins: Plugin[] = [chat, filetransfer, bingo, media]
 
 // what the plugins put into each place of the GUI, in registry order; filled once by initPlugins
-const slots: { [K in keyof Slots]: Slots[K][] } = { 'side.tab': [], 'header.item': [], 'member.menu': [] }
+const slots: { [K in keyof Slots]: Slots[K][] } = {
+  'side.tab': [],
+  'header.item': [],
+  'room.item': [],
+  'member.menu': [],
+}
 let filled = false
 export function registerSlot<K extends keyof Slots>(name: K, item: Slots[K]) {
   slots[name].push(item)
@@ -26,6 +32,7 @@ export function initPlugins(neko: NekoApp) {
     for (const p of plugins) {
       if (p.tab) registerSlot('side.tab', p.tab)
       for (const item of p.topBar ?? []) registerSlot('header.item', item)
+      for (const item of p.roomBar ?? []) registerSlot('room.item', item)
       for (const item of p.memberMenu ?? []) registerSlot('member.menu', item)
     }
   }

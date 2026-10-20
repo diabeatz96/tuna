@@ -133,6 +133,17 @@
     "won": "{{name}} got BINGO!",
     "free": "Free"
   },
+  "media": {
+    "play": "Play for everyone",
+    "pause": "Pause for everyone",
+    "back": "Back {{s}} seconds for everyone",
+    "forward": "Forward {{s}} seconds for everyone",
+    "did_play": "pressed play ▶️",
+    "did_pause": "paused ⏸️",
+    "did_forward": "skipped ahead ⏩",
+    "did_back": "went back ⏪",
+    "now_playing": "Now playing: {{title}}"
+  },
   "connection": {
     "reconnecting": "Reconnecting...",
     "connected": "Connected",

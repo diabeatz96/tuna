@@ -26,6 +26,7 @@ vi.mock('./chat', () => ({ chat: manifest('chat', 'chat') }))
 vi.mock('./filetransfer', () => ({ filetransfer: manifest('filetransfer', 'files') }))
 // a plugin with nothing but its id: contributes no slot entries, gets no server events
 vi.mock('./bingo', () => ({ bingo: { id: 'bingo', ns: 'common' } }))
+vi.mock('./media', () => ({ media: { id: 'media', ns: 'common' } }))
 
 // a registry as at start-up
 const fresh = async () => {
@@ -46,6 +47,7 @@ test('initPlugins fills the slots in registry order and runs each init', async (
       ['chat', 'chat'],
       ['filetransfer', 'files'],
       ['bingo', 'common'],
+      ['media', 'common'],
     ],
   )
   assert.deepEqual(useSlot('side.tab'), [])
