@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 import { ask } from '@/state/dialogs'
 import { useNeko } from '@/state/provider'
 import { Button } from '@/components/ui/button'
+import { PixelCat, Toy } from '@/components/tuna/PixelCat'
 import type { DiaryEntry } from '@/plugins/types'
 import {
   average,
@@ -24,6 +25,19 @@ import {
 import { media } from './store'
 
 type Section = 'predict' | 'diary' | 'awards'
+
+// an empty page: Tuna asleep on it
+function Napping({ text }: { text: string }) {
+  return (
+    <div className="flex flex-col items-center gap-3 py-6 text-center" data-testid="party-empty">
+      <span className="relative">
+        <PixelCat frame="sleep" scale={2} />
+        <Toy toy="zzz" scale={2} className="absolute -top-1 right-0 animate-snooze" />
+      </span>
+      <p className="max-w-[260px] leading-5 text-text-muted">{text}</p>
+    </div>
+  )
+}
 const small = 'h-7 px-2.5 py-0 text-[12px] normal-case'
 
 // the Watch Party tab: this episode's prediction round, the diary of what the room watched, the awards
@@ -76,7 +90,7 @@ function Predictions() {
   if (!predict?.id)
     return (
       <div className="flex flex-col items-center gap-3 py-6 text-center" data-testid="predict-none">
-        <div className="text-[36px]">🔮</div>
+        <PixelCat frame="wide" scale={2} />
         <p className="max-w-[260px] leading-5 text-text-muted">{t('party.predict_intro')}</p>
         <Button className={small} data-testid="predict-open" onClick={() => predictOpen(neko)}>
           {title ? t('party.predict_open_for', { title: cleanTitle(title) }) : t('party.predict_open')}
@@ -170,7 +184,7 @@ function Diary() {
       admin: selectIsAdmin(s),
     })),
   )
-  if (!diary.length) return <p className="py-6 text-center leading-5 text-text-muted">{t('party.diary_empty')}</p>
+  if (!diary.length) return <Napping text={t('party.diary_empty')} />
   return (
     <ul className="flex flex-col gap-2" data-testid="diary">
       {diary.map((e) => (
@@ -242,7 +256,7 @@ function Awards() {
   const { t } = useTranslation()
   const diary = useStore(media(useNeko()), (s) => s.diary)
   const list = awards(diary)
-  if (!list.length) return <p className="py-6 text-center leading-5 text-text-muted">{t('party.awards_empty')}</p>
+  if (!list.length) return <Napping text={t('party.awards_empty')} />
   return (
     <ul className="flex flex-col gap-2" data-testid="awards">
       {list.map((a) => (

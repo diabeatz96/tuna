@@ -1,5 +1,6 @@
 import { Component, type ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
+import { PixelCat } from '@/components/tuna/PixelCat'
 import logo from '@/assets/images/logo.svg'
 import { BRAND } from '@/lib/brand'
 
@@ -21,6 +22,10 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, { error?: 
             <span className="text-[30px] leading-14 font-black">{BRAND.name}</span>
           </div>
           <div className="flex flex-col">
+            {/* Tuna, as surprised as anyone */}
+            <span className="mx-auto my-2">
+              <PixelCat frame="wide" scale={2} />
+            </span>
             <span className="block text-center leading-7.5 uppercase">
               Something went wrong: {this.state.error.message}
             </span>

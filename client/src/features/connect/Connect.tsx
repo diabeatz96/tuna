@@ -8,6 +8,7 @@ import { tell } from '@/state/dialogs'
 import { useNeko } from '@/state/provider'
 import { i18n } from '@/i18n'
 import { Button } from '@/components/ui/button'
+import { Bubble, PixelCat, useBlink, useCycle, type Frame } from '@/components/tuna/PixelCat'
 import logo from '@/assets/images/logo.svg'
 import { BRAND } from '@/lib/brand'
 
@@ -23,6 +24,31 @@ const loginOnce = (neko: NekoApp, user: string, password: string) =>
     .login(user, password)
     .catch((err) => tell(neko.app, i18n.t('connect.error'), err.message))
     .finally(() => (invite = null))
+
+// Tuna sitting on the box's top edge, saying hello
+function PerchedTuna() {
+  const { t } = useTranslation()
+  const frame = useBlink(useCycle<Frame>(['sit', 'sit', 'sit_tail', 'sit', 'blep', 'sit'], 900))
+  return (
+    <span className="pointer-events-none absolute right-5 bottom-full -mb-[9px]" data-testid="connect-tuna">
+      <PixelCat frame={frame} scale={2}>
+        <Bubble right>{t('mascot.hello')}</Bubble>
+      </PixelCat>
+    </span>
+  )
+}
+
+// connecting: Tuna on her way
+function WalkingTuna() {
+  const { t } = useTranslation()
+  const frame = useCycle<Frame>(['walk_1', 'walk_2'], 200)
+  return (
+    <div className="flex flex-col items-center gap-2 py-2.5" data-testid="connect-walking">
+      <PixelCat frame={frame} scale={3} />
+      <span className="font-mono text-[12px] text-text-muted">{t('mascot.connecting')}</span>
+    </div>
+  )
+}
 
 // the login screen, and the "Connect" screen of a logged-in viewer without a connection
 export function Connect() {
@@ -70,16 +96,14 @@ export function Connect() {
   const passwordLogin = oauth.password_login_enabled !== false
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-background-floating/80" data-testid="connect">
-      <div className="w-[320px] rounded-[5px] bg-background-secondary p-2.5">
+      <div className="relative w-[320px] rounded-[5px] bg-background-secondary p-2.5">
+        {!connecting && <PerchedTuna />}
         <div className="flex w-full cursor-pointer items-center justify-center">
           <img src={logo} alt={BRAND.name} className="mr-2.5 h-[90px]" />
           <span className="text-[30px] leading-14 font-black">{BRAND.name}</span>
         </div>
         {connecting ? (
-          <div className="relative mx-auto h-[90px] w-[90px]">
-            <div className="absolute top-0 left-0 h-full w-full animate-loader rounded-full bg-style-primary opacity-60"></div>
-            <div className="absolute top-0 left-0 h-full w-full animate-loader rounded-full bg-style-primary opacity-60 [animation-delay:-1s]"></div>
-          </div>
+          <WalkingTuna />
         ) : authenticated ? (
           // logged in but disconnected (network drop, server restart)
           <form className="flex flex-col" onSubmit={(e) => (e.preventDefault(), client.connect())}>

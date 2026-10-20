@@ -69,6 +69,7 @@
     "ignore_sounds": "Mute Soundboard",
     "theater_seats": "Theater Seats",
     "show_mascot": "Show Tuna the Cat",
+    "tuna_talks": "Tuna Talks",
     "links_in_app": "Always open links in app",
     "keyboard_layout": "Keyboard Layout",
     "broadcast_title": "Live Broadcast"
@@ -120,7 +121,20 @@
     "tummy": "Tummy",
     "points": "Tuna points",
     "no_points": "Nobody has played with Tuna yet",
-    "fed": "fed Tuna a fish 🐟"
+    "fed": "fed Tuna a fish 🐟",
+    "mood": "Mood",
+    "level": "Lv {{n}}",
+    "level_hint": "Every fish, pet and yarn ball from the room levels her up",
+    "hats": "Hats",
+    "hat_none": "No hat",
+    "hat_party": "Party hat",
+    "hat_crown": "Crown",
+    "hat_bow": "Bow",
+    "hat_beanie": "Beanie",
+    "hat_flower": "Flower",
+    "talks": "Tuna talks",
+    "connecting": "Tuna is on her way…",
+    "hello": "hi! come in ♪"
   },
   "bingo": {
     "tab": "Cat Bingo",

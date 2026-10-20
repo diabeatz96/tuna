@@ -132,6 +132,7 @@ test('every language has the three files, en every key, the others all but the k
     'setting.ignore_sounds',
     'setting.theater_seats',
     'setting.show_mascot',
+    'setting.tuna_talks',
     'setting.links_in_app',
     'room.',
     'presence.',

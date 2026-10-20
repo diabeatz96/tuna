@@ -10,6 +10,9 @@ import { Chat } from './Chat'
 import { chat as store, prependHistory, push } from './store'
 import { mute, mutedByMe } from './actions'
 
+// what makes Tuna the mascot look up
+const MENTION = /\b(tuna|kitty|kitten|cats?|meow|nya+|fish)\b|🐟|🐱|😺|😸|😻|🐈/i
+
 export const chat: Plugin = {
   id: 'chat',
   ns: 'chat',
@@ -68,6 +71,8 @@ export const chat: Plugin = {
       store(neko).setState((s) => ({ texts: s.texts + 1 }))
       if (app.getState().settings.chat_sound && payload.id !== client.state.session_id)
         new Audio('chat.mp3').play().catch(() => {})
+      // Tuna hears her name, cats and fish
+      if (MENTION.test(payload.content.text)) neko.bus.emit('cue', { kind: 'mention', name: name(client, payload.id) })
     }
   },
   init(neko) {

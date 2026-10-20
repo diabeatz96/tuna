@@ -10,7 +10,7 @@ import type { Dialog } from './dialogs'
 import type { Bus } from './bus'
 import type { Reaction } from './emotes'
 import type { Ping } from './pings'
-import type { Points } from './mascot'
+import type { Hat, Points } from './mascot'
 import { t } from '@/i18n'
 
 export const defaults = {
@@ -26,8 +26,9 @@ export const defaults = {
   ignore_sounds: false,
   // everyone's avatar in a row of seats along the bottom of the video
   theater_seats: false,
-  // Tuna the cat on the video (features/mascot)
+  // Tuna the cat on the video (features/mascot), and her speech bubbles
   show_mascot: true,
+  tuna_talks: true,
   // open chat links on the remote desktop instead of locally (needs the openinapp plugin)
   links_in_app: false,
   keyboard_layout: 'us',
@@ -65,6 +66,8 @@ export function createAppStore() {
     ball: { at: 0, by: '', x: 0 },
     // her tummy (0..100) when last fed; it empties over time
     tummy: { level: 50, at: Date.now() },
+    // the hat she wears, picked by someone in the room at a time (the newest pick wins)
+    hat: { name: '' as Hat, at: 0, by: '' },
     // each member's Tuna points, as they announced them
     points: {} as Record<string, Points>,
     ignored: {} as Record<string, boolean>,

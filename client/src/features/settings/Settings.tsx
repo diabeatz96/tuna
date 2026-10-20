@@ -89,6 +89,7 @@ export function Settings() {
       | 'ignore_sounds'
       | 'theater_seats'
       | 'show_mascot'
+      | 'tuna_talks'
       | 'links_in_app',
     name: string,
   ) => (
@@ -123,6 +124,7 @@ export function Settings() {
         {toggle('ignore_sounds', 'ignore_sounds')}
         {toggle('theater_seats', 'theater_seats')}
         {toggle('show_mascot', 'show_mascot')}
+        {toggle('tuna_talks', 'tuna_talks')}
         {openInApp && toggle('links_in_app', 'links_in_app')}
         <li className={row}>
           <span className={label}>{t('setting.keyboard_layout')}</span>

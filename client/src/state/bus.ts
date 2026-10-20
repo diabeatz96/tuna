@@ -3,11 +3,29 @@ import { name, type NekoApp } from './app'
 import { t } from '@/i18n'
 
 // signals between layers that must not import each other: the room's event lines (the chat
-// plugin shows them) and the logout reset (every store with per-session data listens)
+// plugin shows them), the logout reset (every store with per-session data listens), and cues,
+// things that happen in the room that Tuna the mascot reacts to (features/mascot)
 export type Bus = Emitter<{
   log: (id: string, name: string, content: string) => void
   logout: () => void
+  cue: (cue: Cue) => void
 }>
+
+export type CueKind =
+  | 'join' // someone connected (name)
+  | 'leave' // someone left (name)
+  | 'mention' // a chat message names her, or cats, or fish (name: the sender)
+  | 'play' // the room's video plays (name: who pressed play)
+  | 'pause' // or pauses
+  | 'ready' // a ready check started
+  | 'go' // everyone is ready
+  | 'show' // something new plays
+  | 'rate' // the room is asked to rate what played
+  | 'bingo' // someone got bingo (name)
+export interface Cue {
+  kind: CueKind
+  name?: string
+}
 export const createBus = (): Bus => new Emitter()
 
 // an event line attributed to a session ("bob took the controls")

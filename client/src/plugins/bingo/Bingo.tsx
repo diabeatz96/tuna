@@ -7,6 +7,7 @@ import { name } from '@/state/app'
 import { useNeko } from '@/state/provider'
 import { Button } from '@/components/ui/button'
 import logo from '@/assets/images/logo.svg'
+import { PixelCat } from '@/components/tuna/PixelCat'
 import { FREE } from './card'
 import { bingo, cardOf, end, mark, start } from './store'
 
@@ -25,7 +26,7 @@ export function Bingo() {
   if (!seed)
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-4 p-5 text-center" data-testid="bingo">
-        <img src={logo} alt="" className="h-16" />
+        <PixelCat frame="happy" hat="party" scale={2} />
         <p className="max-w-[260px] leading-5 text-text-muted">{t('bingo.intro')}</p>
         <Button data-testid="bingo-start" onClick={() => start(neko)}>
           {t('bingo.start')}

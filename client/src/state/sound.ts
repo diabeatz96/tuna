@@ -105,12 +105,11 @@ export function playSound(name: SoundName, gain = 0.8) {
   } catch {}
 }
 
-// bingo: a rising arpeggio, then a meow
+// bingo: a rising arpeggio
 export function fanfare() {
   try {
     const c = audio()
     ;[523, 659, 784].forEach((freq, i) => tone(c, { type: 'square', freq, at: i * 0.12, dur: 0.12, gain: 0.05 }))
     tone(c, { type: 'square', freq: 1047, at: 0.36, dur: 0.5, gain: 0.05, vibrato: [7, 6] })
-    setTimeout(() => playSound('hungry', 0.7), 850)
   } catch {}
 }

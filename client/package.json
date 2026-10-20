@@ -19,6 +19,7 @@
     "check:cycles": "node tools/cycles.mjs",
     "check:dist": "node core/dist.check.mjs",
     "build:emoji": "node tools/emoji.ts",
+    "build:tuna": "node tools/tuna-sprites.mjs && prettier --write src/components/tuna/frames.ts",
     "build:core": "npm --prefix core run build"
   },
   "dependencies": {

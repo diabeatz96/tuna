@@ -1,297 +1,329 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useStore } from 'zustand'
 import { useShallow } from 'zustand/react/shallow'
 import { selectIsAdmin } from '@m1k1o/neko'
-import { useTranslation } from 'react-i18next'
-import { EyeSlashIcon } from '@phosphor-icons/react'
-import { cn } from '@/lib/utils'
-import { feed, pet, score, throwBall, tummy } from '@/state/mascot'
+import type { Cue } from '@/state/bus'
+import { tummy } from '@/state/mascot'
 import { useNeko } from '@/state/provider'
-import { setSetting } from '@/state/settings'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { FISH, FRAMES, MOUTH, toPaths, YARN, type Face } from './sprite'
+import { Popover, PopoverTrigger } from '@/components/ui/popover'
+import { Bubble, PixelCat, Toy, useBlink, useCycle, type Frame } from '@/components/tuna/PixelCat'
+import { IDLE_MS, line, pickIdle, wanderTo, type Say } from './brain'
+import { Menu } from './Menu'
 
-const SCALE = 3 // screen pixels per sprite pixel
-const EAT_MS = 2200 // after a fish
-const HAPPY_MS = 1500 // after an emote, a sound, a ping or a pet
-const NAP_MS = 10 * 60_000 // a quiet room
-const HUNGRY = 20 // tummy level that makes her ask for a fish
+const NAP_MS = 10 * 60_000 // a quiet room sends her to sleep
+const EAT_MS = 2200
+const LOVE_MS = 1800
+const SAY_MS = 3600 // a bubble's time
+const SAY_EVERY = 5000 // between two bubbles nobody asked for
+const WALK_MS = 7000 // across the whole width, strolling
+const RUN_MS = 1800 // and after a yarn ball
+const HUNGRY = 20
 
-const W = FRAMES.open[0].length
-const H = FRAMES.open.length
-const paths = Object.fromEntries(Object.entries(FRAMES).map(([k, grid]) => [k, toPaths(grid)])) as Record<
-  Face,
-  ReturnType<typeof toPaths>
->
-const fish = toPaths(FISH)
-const yarn = toPaths(YARN)
+type Act = 'sit' | 'walk' | 'run' | 'groom' | 'yawn' | 'look' | 'blep' | 'tail' | 'happy' | 'wide'
 
-function Sprite({ p, w, h, className }: { p: ReturnType<typeof toPaths>; w: number; h: number; className?: string }) {
-  return (
-    <svg
-      viewBox={`0 0 ${w} ${h}`}
-      width={w * SCALE}
-      height={h * SCALE}
-      shapeRendering="crispEdges"
-      className={className}
-    >
-      {p.map((x) => (
-        <path key={x.fill} fill={x.fill} d={x.d} />
-      ))}
-    </svg>
-  )
-}
-
-// the time, every second: the moods run out by the clock
+// the time, every half second: her moods run out by the clock
 function useNow() {
   const [now, setNow] = useState(Date.now)
   useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000)
+    const id = setInterval(() => setNow(Date.now()), 500)
     return () => clearInterval(id)
   }, [])
   return now
 }
 
-// a blink now and then
-function useBlink() {
-  const [blink, setBlink] = useState(false)
+function usePhone() {
+  const query = '(max-width: 768px)'
+  const [phone, setPhone] = useState(() => typeof matchMedia === 'function' && matchMedia(query).matches)
   useEffect(() => {
-    let t = 0
-    const next = () => {
-      t = window.setTimeout(
-        () => {
-          setBlink(true)
-          t = window.setTimeout(() => (setBlink(false), next()), 160)
-        },
-        2500 + Math.random() * 4000,
-      )
-    }
-    next()
-    return () => clearTimeout(t)
+    const m = matchMedia(query)
+    const on = () => setPhone(m.matches)
+    m.addEventListener('change', on)
+    return () => m.removeEventListener('change', on)
   }, [])
-  return blink
+  return phone
 }
 
-// a yarn ball's throw: it rolls out, she runs after it, catches it, and walks back home
-type Chase = 'home' | 'roll' | 'run' | 'caught' | 'back'
-function useChase(at: number) {
-  const [chase, setChase] = useState<Chase>('home')
-  useEffect(() => {
-    if (!at || Date.now() - at > 4000) return
-    const steps: [Chase, number][] = [
-      ['roll', 0],
-      ['run', 350],
-      ['caught', 1500],
-      ['back', 2600],
-      ['home', 3700],
-    ]
-    const ids = steps.map(([c, ms]) => window.setTimeout(() => setChase(c), ms))
-    return () => ids.forEach(clearTimeout)
-  }, [at])
-  return chase
-}
-
-// her place along the bottom: home on the left, or `x` of the way across (a fraction of the width)
-const along = (x: number, offset = 0) => `calc(${15 + offset}px + ${x} * (100% - ${W * SCALE + 30}px))`
-
-// Tuna on the video's lower left (a viewer setting, on by default, and the cat button over the
-// video). She perks up when the room cheers, naps when it is quiet, the stream stops or the curtain
-// is down, and asks for a fish when her tummy is empty. A click opens her play menu: feed her, pet
-// her, throw her a yarn ball; everyone sees it, and it counts towards your Tuna points.
+// Tuna, living along the bottom of the video (a viewer setting, and the cat button over the video).
+// She sits, blinks, swishes her tail, grooms, looks around, bleps and strolls about on her own; naps
+// when the stream stops, the curtain is down or the room is quiet; says things in a pixel bubble about
+// who comes and goes, the show, the chat and bingo; and a click opens her menu: feed her, pet her,
+// throw her a yarn ball she runs after, dress her up. What the room does with her everyone sees; her
+// strolls and musings are this viewer's own.
 export function Mascot() {
-  const { t } = useTranslation()
   const neko = useNeko()
-  const { on, activity, fed, petted, ball, belly, points } = useStore(
+  const { on, talks, activity, fed, petted, ball, belly, hat } = useStore(
     neko.app,
     useShallow((s) => ({
       on: s.settings.show_mascot,
+      talks: s.settings.tuna_talks,
       activity: s.activity,
       fed: s.fed,
       petted: s.petted,
       ball: s.ball,
       belly: s.tummy,
-      points: s.points,
+      hat: s.hat,
     })),
   )
-  const { playing, curtain, sessions, me } = useStore(
+  const { playing, curtain } = useStore(
     neko.client.store,
-    useShallow((s) => ({
-      playing: s.video.playing,
-      curtain: s.settings.private_mode && !selectIsAdmin(s),
-      sessions: s.sessions,
-      me: s.session_id,
-    })),
+    useShallow((s) => ({ playing: s.video.playing, curtain: s.settings.private_mode && !selectIsAdmin(s) })),
   )
   const now = useNow()
-  const blink = useBlink()
-  const chase = useChase(ball.at)
+  const phone = usePhone()
+  const scale = phone ? 2 : 3
+
+  const [x, setX] = useState(0)
+  const [moveMs, setMoveMs] = useState(0)
+  const [facing, setFacing] = useState<1 | -1>(1)
+  const [act, setAct] = useState<{ kind: Act; until: number }>({ kind: 'sit', until: 0 })
+  const [bubble, setBubble] = useState<{ text: string; key: number } | null>(null)
+  const [yarnX, setYarnX] = useState<number | null>(null)
+  const [sparkle, setSparkle] = useState(0)
   const [open, setOpen] = useState(false)
-  if (!on) return null
 
+  const kind: Act = act.until > now ? act.kind : 'sit'
+  const moving = kind === 'walk' || kind === 'run'
   const eating = now - fed.at < EAT_MS
-  const loved = now - petted.at < HAPPY_MS
-  const happy = loved || chase === 'caught' || now - activity < HAPPY_MS
-  const chasing = chase === 'roll' || chase === 'run'
-  const asleep = !eating && !chasing && !open && (!playing || curtain || now - activity > NAP_MS)
-  const mood: Face = eating ? 'eat' : chasing ? 'open' : asleep ? 'sleep' : happy ? 'happy' : blink ? 'blink' : 'open'
+  const loved = now - petted.at < LOVE_MS
+  const busy = moving || eating || loved || yarnX !== null
+  const asleep = !busy && !open && (!playing || curtain || now - activity > NAP_MS)
+
+  // what the timers and the room's events need to know, without restarting them
+  const live = useRef({ x, asleep, busy, open, talks, saidAt: 0 })
+  live.current = { ...live.current, x, asleep, busy, open, talks }
+  const timers = useRef<number[]>([])
+  const later = useCallback((ms: number, fn: () => void) => {
+    timers.current.push(window.setTimeout(fn, ms))
+  }, [])
+  useEffect(() => () => timers.current.forEach(clearTimeout), [])
+
+  const doAct = useCallback((k: Act, ms: number) => setAct({ kind: k, until: Date.now() + ms }), [])
+  const say = useCallback(
+    (what: Say, name = '', force = false) => {
+      const l = live.current
+      if (!l.talks || (!force && Date.now() - l.saidAt < SAY_EVERY)) return
+      l.saidAt = Date.now()
+      const key = Date.now()
+      setBubble({ text: line(what, name), key })
+      later(SAY_MS, () => setBubble((b) => (b?.key === key ? null : b)))
+    },
+    [later],
+  )
+  const moveTo = useCallback(
+    (to: number, msPerWidth: number, k: Act) => {
+      const from = live.current.x
+      const ms = Math.max(300, Math.abs(to - from) * msPerWidth)
+      setFacing(to >= from ? 1 : -1)
+      setMoveMs(ms)
+      setX(to)
+      doAct(k, ms)
+      return ms
+    },
+    [doAct],
+  )
+
+  // the room's events
+  useEffect(
+    () =>
+      neko.bus.on('cue', (cue: Cue) => {
+        if (live.current.asleep && cue.kind !== 'mention' && cue.kind !== 'bingo') return
+        const react: Partial<Record<Cue['kind'], [Act, number, boolean]>> = {
+          join: ['happy', 1500, false],
+          mention: ['happy', 1200, true],
+          play: ['happy', 1000, false],
+          pause: ['wide', 1500, false],
+          ready: ['happy', 1000, false],
+          go: ['happy', 1500, true],
+          show: ['wide', 1200, false],
+          bingo: ['happy', 2000, true],
+        }
+        const r = react[cue.kind]
+        if (r && !live.current.busy) doAct(r[0], r[1])
+        say(cue.kind, cue.name, r?.[2] ?? false)
+      }),
+    [neko, doAct, say],
+  )
+
+  // the room's plays with her; the first values seen are old news
+  const seen = useRef({ fed: fed.at, petted: petted.at, ball: ball.at, hat: hat.at })
+  useEffect(() => {
+    if (fed.at === seen.current.fed) return
+    seen.current.fed = fed.at
+    say('fed', '', true)
+  }, [fed.at, say])
+  useEffect(() => {
+    if (petted.at === seen.current.petted) return
+    seen.current.petted = petted.at
+    say('pet', '', true)
+  }, [petted.at, say])
+  useEffect(() => {
+    if (hat.at === seen.current.hat) return
+    seen.current.hat = hat.at
+    say(hat.name ? 'hat' : 'hat_off', '', true)
+  }, [hat.at, hat.name, say])
+  // a yarn ball: it rolls out from her paws, she runs after it, pounces, and is pleased with herself
+  useEffect(() => {
+    if (ball.at === seen.current.ball || Date.now() - ball.at > 4000) return
+    seen.current.ball = ball.at
+    say('ball', '', true)
+    doAct('wide', 400)
+    setYarnX(live.current.x)
+    later(30, () => setYarnX(ball.x))
+    later(350, () => {
+      const ms = moveTo(ball.x, RUN_MS, 'run')
+      later(ms, () => {
+        setYarnX(null)
+        setSparkle(Date.now())
+        doAct('happy', 1600)
+        say('caught', '', true)
+      })
+    })
+  }, [ball.at, ball.x, say, later, moveTo, doAct])
+
+  // waking up: a yawn
+  const wasAsleep = useRef(asleep)
+  useEffect(() => {
+    if (wasAsleep.current && !asleep) {
+      doAct('yawn', 1400)
+      say('wake')
+    }
+    wasAsleep.current = asleep
+  }, [asleep, doAct, say])
+
+  // on her own, now and then: a stroll, a groom, a look around, a musing
+  useEffect(() => {
+    if (!on) return
+    let t = 0
+    const next = () => {
+      t = window.setTimeout(
+        () => {
+          const l = live.current
+          if (!l.asleep && !l.busy && !l.open) {
+            const idle = pickIdle(Math.random, l.talks)
+            if (idle === 'wander') moveTo(wanderTo(l.x), WALK_MS, 'walk')
+            else if (idle === 'chatter') say('idle')
+            else doAct(idle, IDLE_MS[idle])
+          }
+          next()
+        },
+        6000 + Math.random() * 9000,
+      )
+    }
+    next()
+    return () => clearTimeout(t)
+  }, [on, moveTo, say, doAct])
+
+  // hungry: she says so, every couple of minutes
   const level = tummy(belly, now)
-  const away = chase === 'run' || chase === 'caught' ? ball.x : 0
+  useEffect(() => {
+    if (!on) return
+    const id = setInterval(() => {
+      if (!live.current.asleep && tummy(neko.app.getState().tummy) < HUNGRY) say('hungry')
+    }, 120_000)
+    return () => clearInterval(id)
+  }, [on, neko, say])
 
-  // the room's players, best first; only the members here
-  const board = Object.entries(points)
-    .filter(([id]) => sessions[id]?.state.is_connected || id === me)
-    .map(([id, p]) => ({ id, p, name: id === me ? t('you') : sessions[id]?.profile.name || t('somebody') }))
-    .filter((x) => score(x.p) > 0)
-    .sort((a, b) => score(b.p) - score(a.p))
-    .slice(0, 5)
+  // the frame: what is happening first, then what she is doing
+  const walkFrame = useCycle<Frame>(['walk_1', 'walk_2'], kind === 'run' ? 110 : 200, moving)
+  const tailFrame = useCycle<Frame>(['sit', 'sit_tail'], 350, kind === 'tail')
+  const lookFrame = useCycle<Frame>(['look_l', 'look_r'], 800, kind === 'look')
+  let frame: Frame = 'sit'
+  if (eating) frame = 'eat'
+  else if (loved) frame = 'love'
+  else if (moving) frame = walkFrame
+  else if (asleep) frame = 'sleep'
+  else if (kind === 'tail') frame = tailFrame
+  else if (kind === 'look') frame = lookFrame
+  else if (kind !== 'sit') frame = kind as Frame
+  else if (level < HUNGRY) frame = 'look_r'
+  frame = useBlink(frame, !asleep && !moving)
 
-  const action =
-    'flex flex-1 flex-col items-center gap-0.5 rounded-[4px] bg-background-tertiary py-1.5 hover:bg-background-accent'
+  if (!on) return null
+  const box = 32 * scale
+  const along = (at: number, offset = 0) => `calc(${10 + offset}px + ${at} * (100% - ${box + 20}px))`
 
   return (
     <>
-      {/* the yarn ball, rolling from her paws to where it stops */}
-      {chase !== 'home' && chase !== 'back' && chase !== 'caught' && (
-        <div
-          className="absolute bottom-[12px] transition-[left] duration-700 ease-out"
-          style={{ left: along(chase === 'roll' ? 0 : ball.x, W * SCALE * 0.6) }}
+      {yarnX !== null && (
+        <span
+          className="absolute bottom-[10px] transition-[left] duration-700 ease-out"
+          style={{ left: along(yarnX, box / 2) }}
           data-testid="yarn"
         >
-          <Sprite p={yarn} w={YARN[0].length} h={YARN.length} className="animate-spin [animation-duration:0.6s]" />
-        </div>
+          <Toy toy="yarn" scale={scale} className="animate-spin [animation-duration:0.5s]" />
+        </span>
       )}
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <button
-            type="button"
-            className="pointer-events-auto absolute bottom-[10px] cursor-pointer transition-[left] duration-1000 ease-in-out focus-visible:outline-2 focus-visible:outline-style-primary"
-            style={{ width: W * SCALE, height: H * SCALE, left: along(away) }}
-            title={t('mascot.play')}
-            aria-label={t('mascot.play')}
-            data-testid="mascot"
-            data-mood={mood}
-            data-chase={chase}
-          >
-            {/* keyed by what happened last, so each one restarts the hop */}
-            <Sprite
-              key={chasing ? 'run' : happy ? `${activity}-${petted.at}-${chase}` : 'still'}
-              p={paths[mood]}
-              w={W}
-              h={H}
-              className={cn(
-                'origin-bottom drop-shadow-[0_2px_2px_rgba(0,0,0,0.6)]',
-                asleep && 'animate-breathe',
-                (happy || chase === 'run') && !eating && 'animate-hop',
-              )}
-            />
-            {asleep && (
-              <>
-                <span className="absolute -top-1 right-1 animate-snooze text-[13px] font-bold text-white/80">z</span>
-                <span className="absolute -top-1 right-1 animate-snooze text-[10px] font-bold text-white/70 [animation-delay:1.2s]">
-                  z
-                </span>
-              </>
-            )}
-            {loved &&
-              [0, 1, 2].map((i) => (
-                <span
-                  key={`${petted.at}-${i}`}
-                  className="absolute -top-1 animate-snooze text-[14px]"
-                  style={{ left: 10 + i * 14, animationDelay: `${i * 0.2}s` }}
-                >
-                  ❤️
-                </span>
-              ))}
-            {chase === 'caught' && (
-              <span className="absolute -top-3 left-1/2 animate-snooze text-[14px] font-black text-style-primary">
-                +2
-              </span>
-            )}
-            {!asleep && !eating && !chasing && level < HUNGRY && (
-              <span className="absolute -top-6 -right-6 rounded-full bg-white px-1.5 py-0.5 text-[12px] text-black shadow-elevation-high">
-                🐟?
-              </span>
-            )}
-            {eating && (
-              <span
-                key={fed.at}
-                className="absolute"
-                style={{ left: (MOUTH.x - 1) * SCALE, top: (MOUTH.y - 2) * SCALE }}
-              >
-                <Sprite p={fish} w={FISH[0].length} h={FISH.length} className="animate-gulp" />
-              </span>
-            )}
-          </button>
-        </PopoverTrigger>
-        <PopoverContent
-          side="top"
-          align="start"
-          className="w-[230px] rounded-[5px] bg-background-floating p-2.5 text-[13px] shadow-elevation-high"
-          data-testid="mascot-menu"
-        >
-          <div className="mb-2 flex items-center justify-between">
-            <span className="font-bold">🐟 Tuna</span>
+      <div
+        className="absolute bottom-[8px] flex items-end justify-center"
+        style={{
+          left: along(x),
+          width: box,
+          height: 26 * scale,
+          transition: `left ${moveMs}ms ${kind === 'run' ? 'ease-in' : 'linear'}`,
+        }}
+      >
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
             <button
               type="button"
-              className="flex cursor-pointer items-center gap-1 text-[12px] text-text-muted hover:text-text-normal"
-              onClick={() => (setOpen(false), setSetting(neko, 'show_mascot', false))}
+              className="pointer-events-auto relative cursor-pointer drop-shadow-[0_3px_0_rgba(0,0,0,0.45)] focus-visible:outline-2 focus-visible:outline-style-primary"
+              aria-label="Tuna"
+              title="Tuna"
+              data-testid="mascot"
+              data-frame={frame}
+              data-x={x.toFixed(2)}
+              onMouseEnter={() => {
+                if (live.current.asleep || live.current.busy || live.current.open) return
+                doAct('happy', 900)
+                if (Math.random() < 0.25) say('hover')
+              }}
             >
-              <EyeSlashIcon className="size-3.5" /> {t('mascot.hide')}
-            </button>
-          </div>
-          <div className="mb-1 flex justify-between text-[12px] text-text-muted">
-            <span>{t('mascot.tummy')}</span>
-            <span>{Math.round(level)}%</span>
-          </div>
-          <div className="mb-2.5 h-2 overflow-hidden rounded-full bg-background-tertiary">
-            <div
-              className={cn(
-                'h-full rounded-full transition-all',
-                level < HUNGRY ? 'bg-style-error' : 'bg-style-primary',
-              )}
-              style={{ width: `${level}%` }}
-            />
-          </div>
-          <div className="mb-2.5 flex gap-1.5">
-            <button type="button" className={action} data-testid="mascot-feed" onClick={() => feed(neko)}>
-              <span className="text-[18px]">🐟</span>
-              <span className="text-[11px]">{t('mascot.feed')}</span>
-            </button>
-            <button type="button" className={action} data-testid="mascot-pet" onClick={() => pet(neko)}>
-              <span className="text-[18px]">✋</span>
-              <span className="text-[11px]">{t('mascot.pet')}</span>
-            </button>
-            <button
-              type="button"
-              className={action}
-              data-testid="mascot-ball"
-              onClick={() => throwBall(neko) && setOpen(false)}
-            >
-              <span className="text-[18px]">🧶</span>
-              <span className="text-[11px]">{t('mascot.ball')}</span>
-            </button>
-          </div>
-          <div className="mb-1 text-[12px] font-bold">{t('mascot.points')}</div>
-          {board.length ? (
-            <ol className="flex flex-col gap-1" data-testid="mascot-points">
-              {board.map((x, i) => (
-                <li
-                  key={x.id}
-                  className="flex justify-between gap-2"
-                  title={`🐟 ${x.p.feed} · ✋ ${x.p.pet} · 🧶 ${x.p.ball}`}
-                >
-                  <span className="truncate">
-                    {['🥇', '🥈', '🥉'][i] ?? '🐾'} {x.name}
+              <PixelCat frame={frame} hat={hat.name} scale={scale} flip={moving && facing < 0}>
+                {bubble && (
+                  <Bubble key={bubble.key} right={x > 0.65}>
+                    {bubble.text}
+                  </Bubble>
+                )}
+                {asleep && (
+                  <>
+                    <Toy toy="zzz" scale={scale - 1} className="absolute -top-2 right-1 animate-snooze" />
+                    <Toy
+                      toy="zzz"
+                      scale={scale - 1}
+                      className="absolute -top-2 right-1 animate-snooze [animation-delay:1.2s]"
+                    />
+                  </>
+                )}
+                {loved &&
+                  [0, 1, 2].map((i) => (
+                    <Toy
+                      key={`${petted.at}-${i}`}
+                      toy="heart"
+                      scale={scale - 1}
+                      className="absolute -top-1 animate-snooze"
+                      // spread across her head, one after the other
+                      style={{ left: (4 + i * 7) * scale, animationDelay: `${i * 0.2}s` }}
+                    />
+                  ))}
+                {now - sparkle < 1200 && (
+                  <Toy
+                    key={sparkle}
+                    toy="sparkle"
+                    scale={scale - 1}
+                    className="absolute -top-3 left-0 animate-snooze"
+                  />
+                )}
+                {eating && (
+                  <span key={fed.at} className="absolute" style={{ left: 9 * scale, top: 12 * scale }}>
+                    <Toy toy="fish" scale={scale - 1} className="animate-gulp" />
                   </span>
-                  <span className="font-bold">{score(x.p)}</span>
-                </li>
-              ))}
-            </ol>
-          ) : (
-            <div className="text-[12px] text-text-muted">{t('mascot.no_points')}</div>
-          )}
-        </PopoverContent>
-      </Popover>
+                )}
+              </PixelCat>
+            </button>
+          </PopoverTrigger>
+          <Menu onClose={() => setOpen(false)} />
+        </Popover>
+      </div>
     </>
   )
 }

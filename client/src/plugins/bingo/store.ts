@@ -28,6 +28,7 @@ const who = ({ client }: NekoApp, id: string) => (id === client.state.session_id
 function celebrate(neko: NekoApp, id: string) {
   if (!neko.app.getState().settings.ignore_sounds) fanfare()
   for (let i = 0; i < 3; i++) setTimeout(() => showEmote(neko.app, 'celebrate', id), i * 250)
+  neko.bus.emit('cue', { kind: 'bingo', name: who(neko, id) })
 }
 
 function newRound(neko: NekoApp, seed: string, by: string) {

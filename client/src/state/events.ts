@@ -5,7 +5,7 @@ import { actions } from './actions'
 import { toast, tell, dismissToasts } from './dialogs'
 import { event } from './bus'
 import { EMOTES, showEmote } from './emotes'
-import { announce, resetPoints, showBall, showFeed, showPet, showPoints } from './mascot'
+import { announce, forget, resetPoints, showBall, showFeed, showHat, showPet, showPoints } from './mascot'
 import { showPing } from './pings'
 import { chime } from './sound'
 import { hearSound, isSound } from './soundboard'
@@ -40,8 +40,10 @@ export function wireEvents(neko: NekoApp) {
     const sess = client.state.sessions[id]
     const now = !!sess?.state.is_connected
     if (now !== !!known[id]?.connected && id !== client.state.session_id) {
+      forget(neko, id)
       event(neko, id, t(now ? 'notifications.connected' : 'notifications.disconnected', { name: '' }))
       if (app.getState().settings.join_sound) chime(now)
+      bus.emit('cue', { kind: now ? 'join' : 'leave', name: sess?.profile.name ?? known[id]?.name })
     }
     known[id] = { connected: now, name: sess?.profile.name ?? known[id]?.name ?? '' }
   }
@@ -49,9 +51,11 @@ export function wireEvents(neko: NekoApp) {
   ev.on('session.updated', onSession)
   ev.on('session.deleted', (id) => {
     const k = known[id]
+    forget(neko, id)
     if (k?.connected) {
       bus.emit('log', id, k.name || t('somebody'), t('notifications.disconnected', { name: '' }))
       if (app.getState().settings.join_sound) chime(false)
+      bus.emit('cue', { kind: 'leave', name: k.name })
     }
     delete known[id]
   })
@@ -124,6 +128,7 @@ export function wireEvents(neko: NekoApp) {
     else if (subject === 'pet') showPet(neko, sender)
     else if (subject === 'ball') showBall(neko, sender, body?.x)
     else if (subject === 'points') showPoints(neko, sender, body)
+    else if (subject === 'hat') showHat(neko, sender, body)
   })
 
   // Tuna points: a new connection starts the room's list over and announces mine

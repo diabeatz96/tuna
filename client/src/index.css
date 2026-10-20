@@ -193,6 +193,47 @@
   }
 }
 
+/* Tuna's pixel look: a 3px border drawn with shadows, which leaves the corners notched like an old
+   game's box; a cream speech bubble with a dark border, and a dark panel with a cream border */
+@utility pixel-bubble {
+  background: #e9dfd1;
+  box-shadow:
+    -3px 0 0 0 #1b1714,
+    3px 0 0 0 #1b1714,
+    0 -3px 0 0 #1b1714,
+    0 3px 0 0 #1b1714,
+    3px 6px 0 0 rgba(0, 0, 0, 0.35);
+}
+@utility pixel-box {
+  background: #241e1a;
+  box-shadow:
+    -3px 0 0 0 #e9dfd1,
+    3px 0 0 0 #e9dfd1,
+    0 -3px 0 0 #e9dfd1,
+    0 3px 0 0 #e9dfd1,
+    6px 6px 0 0 rgba(0, 0, 0, 0.45);
+}
+@utility pixel-button {
+  background: #3d332b;
+  box-shadow:
+    -2px 0 0 0 #1b1714,
+    2px 0 0 0 #1b1714,
+    0 -2px 0 0 #1b1714,
+    0 2px 0 0 #1b1714,
+    inset 0 -3px 0 0 rgba(0, 0, 0, 0.3);
+  &:hover {
+    background: #56473b;
+  }
+  &:active {
+    box-shadow:
+      -2px 0 0 0 #1b1714,
+      2px 0 0 0 #1b1714,
+      0 -2px 0 0 #1b1714,
+      0 2px 0 0 #1b1714,
+      inset 0 3px 0 0 rgba(0, 0, 0, 0.3);
+  }
+}
+
 /* the volume and scroll sliders: a 4px track in the primary colour with a round white thumb */
 @utility slider {
   appearance: none;

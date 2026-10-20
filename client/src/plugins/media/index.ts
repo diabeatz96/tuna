@@ -1,4 +1,5 @@
 import { PopcornIcon } from '@phosphor-icons/react'
+import { name } from '@/state/app'
 import { event, line } from '@/state/bus'
 import { t } from '@/i18n'
 import type { Plugin } from '@/plugins/types'
@@ -35,12 +36,24 @@ export const media: Plugin = {
       }
       if (payload.found && payload.title && payload.title !== before?.title)
         line(neko, '🎬', t('media.now_playing', { title: cleanTitle(payload.title) }))
+      // Tuna watches too
+      const who = payload.by ? name(neko.client, payload.by) : ''
+      if (before?.found && payload.found && before.title && payload.title !== before.title)
+        neko.bus.emit('cue', { kind: 'show' })
+      else if (before?.found && payload.found && payload.paused !== before.paused)
+        neko.bus.emit('cue', { kind: payload.paused ? 'pause' : 'play', name: who })
     }
     if (event_ === 'media/ready') {
       const before = s.getState().ready
       s.setState({ ready: payload, goAt: payload.go_at ?? 0 })
-      if (payload.active && !before?.active && payload.by) event(neko, payload.by, t('party.ready_started'))
-      if (payload.go_at) line(neko, '✋', t('party.ready_go'))
+      if (payload.active && !before?.active && payload.by) {
+        event(neko, payload.by, t('party.ready_started'))
+        neko.bus.emit('cue', { kind: 'ready' })
+      }
+      if (payload.go_at) {
+        line(neko, '✋', t('party.ready_go'))
+        neko.bus.emit('cue', { kind: 'go' })
+      }
     }
     if (event_ === 'media/predict') {
       const before = s.getState().predict
@@ -54,7 +67,10 @@ export const media: Plugin = {
       s.setState((st) => ({ diary: applyEntry(st.diary, payload) }))
       if (isNew && !payload.deleted) line(neko, '📖', t('party.diary_added', { title: cleanTitle(payload.title) }))
     }
-    if (event_ === 'media/rate') s.setState({ rate: payload })
+    if (event_ === 'media/rate') {
+      s.setState({ rate: payload })
+      neko.bus.emit('cue', { kind: 'rate' })
+    }
   },
   init(neko) {
     const { client, bus } = neko
