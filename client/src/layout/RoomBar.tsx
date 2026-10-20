@@ -2,7 +2,6 @@ import { Members } from '@/features/members/Members'
 import { RoomMenu } from '@/features/room-menu/RoomMenu'
 import { Controls } from '@/features/controls/Controls'
 import { Emotes } from '@/features/emotes/Emotes'
-import { Soundboard } from '@/features/soundboard/Soundboard'
 import { useSlot } from '@/plugins'
 
 // the bar under the video: the members, then the room menu, the controls and the emotes in three
@@ -29,7 +28,6 @@ export function RoomBar() {
           ))}
         </div>
         <div className="flex items-center justify-self-end">
-          <Soundboard />
           <Emotes />
         </div>
       </div>

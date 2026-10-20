@@ -86,7 +86,6 @@ export function Settings() {
       | 'ignore_emotes'
       | 'chat_sound'
       | 'join_sound'
-      | 'ignore_sounds'
       | 'theater_seats'
       | 'show_mascot'
       | 'tuna_chat'
@@ -121,7 +120,6 @@ export function Settings() {
         {toggle('ignore_emotes', 'ignore_emotes')}
         {toggle('chat_sound', 'chat_sound')}
         {toggle('join_sound', 'join_sound')}
-        {toggle('ignore_sounds', 'ignore_sounds')}
         {toggle('theater_seats', 'theater_seats')}
         {toggle('show_mascot', 'show_mascot')}
         <li className={row}>

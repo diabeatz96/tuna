@@ -26,7 +26,7 @@ export const cardOf = ({ client }: NekoApp, seed: string) => deal(seed, client.s
 const who = ({ client }: NekoApp, id: string) => (id === client.state.session_id ? t('you') : name(client, id))
 
 function celebrate(neko: NekoApp, id: string) {
-  if (!neko.app.getState().settings.ignore_sounds) fanfare()
+  fanfare()
   for (let i = 0; i < 3; i++) setTimeout(() => showEmote(neko.app, 'celebrate', id), i * 250)
   neko.bus.emit('cue', { kind: 'bingo', name: who(neko, id) })
 }

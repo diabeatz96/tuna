@@ -66,7 +66,6 @@
     "ignore_emotes": "Ignore Emotes",
     "chat_sound": "Play Chat Sound",
     "join_sound": "Play Join/Leave Sound",
-    "ignore_sounds": "Mute Soundboard",
     "theater_seats": "Theater Seats",
     "show_mascot": "Show Tuna the Cat",
     "tuna_talk": "Tuna Talks",
@@ -101,16 +100,6 @@
   },
   "ping": {
     "button": "Ping a spot (or Alt+click the video)"
-  },
-  "sounds": {
-    "title": "Cat Soundboard",
-    "meow": "Meow",
-    "kitten": "Kitten",
-    "feedme": "Feed me!",
-    "hungry": "Hungry meow",
-    "purr": "Purr",
-    "hiss": "Hiss",
-    "yowl": "Yowl"
   },
   "mascot": {
     "play": "Play with Tuna",

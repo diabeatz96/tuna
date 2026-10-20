@@ -1,6 +1,5 @@
-// the GUI's sounds: the join / leave chime and the bingo fanfare are made with Web Audio, the
-// soundboard plays short cat recordings (public/sounds, credits in public/sounds/CREDITS.md);
-// silent where audio is not allowed yet
+// the GUI's sounds, the join / leave chime and the bingo fanfare, made with Web Audio; silent where
+// audio is not allowed yet
 let ctx: AudioContext | undefined
 
 function audio() {
@@ -49,59 +48,6 @@ export function chime(join: boolean) {
     const [a, b] = join ? [660, 880] : [880, 660]
     tone(c, { freq: a, at: 0, dur: 0.25 })
     tone(c, { freq: b, at: 0.12, dur: 0.25 })
-  } catch {}
-}
-
-// the soundboard, in the order of its menu: a recording and the speed it plays at
-export const SOUNDS = ['meow', 'kitten', 'feedme', 'hungry', 'purr', 'hiss', 'yowl'] as const
-export type SoundName = (typeof SOUNDS)[number]
-const CLIPS: Record<SoundName, [file: string, rate: number]> = {
-  meow: ['cat-meow', 1],
-  kitten: ['cat-meow', 1.6],
-  feedme: ['cat-feedme', 1],
-  hungry: ['cat-hungry', 1],
-  purr: ['cat-purr', 1],
-  hiss: ['cat-hiss', 1],
-  yowl: ['cat-yowl', 1],
-}
-export const SOUND_ICON: Record<SoundName, string> = {
-  meow: '🐱',
-  kitten: '🍼',
-  feedme: '🐟',
-  hungry: '🍽️',
-  purr: '😻',
-  hiss: '😾',
-  yowl: '🙀',
-}
-
-// each recording is fetched and decoded once, on its first play
-const buffers = new Map<string, Promise<AudioBuffer>>()
-function clip(c: AudioContext, file: string) {
-  if (!buffers.has(file))
-    buffers.set(
-      file,
-      fetch(`sounds/${file}.mp3`)
-        .then((r) => r.arrayBuffer())
-        .then((b) => c.decodeAudioData(b)),
-    )
-  return buffers.get(file)!
-}
-
-export function playSound(name: SoundName, gain = 0.8) {
-  try {
-    const c = audio()
-    const [file, rate] = CLIPS[name]
-    clip(c, file)
-      .then((buffer) => {
-        const src = c.createBufferSource()
-        const vol = c.createGain()
-        src.buffer = buffer
-        src.playbackRate.value = rate
-        vol.gain.value = gain
-        src.connect(vol).connect(c.destination)
-        src.start()
-      })
-      .catch(() => buffers.delete(file)) // a failed fetch is tried again next time
   } catch {}
 }
 

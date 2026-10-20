@@ -22,8 +22,6 @@ export const defaults = {
   chat_sound: true,
   // a short chime when someone joins or leaves (state/sound.ts)
   join_sound: false,
-  // the soundboard's sounds from the others (state/soundboard.ts)
-  ignore_sounds: false,
   // everyone's avatar in a row of seats along the bottom of the video
   theater_seats: false,
   // Tuna the cat on the video (features/mascot), how much she says, and whether she brings the
