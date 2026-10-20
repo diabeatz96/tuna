@@ -26,6 +26,7 @@ func NewManager(
 		logger:   logger,
 		config:   config,
 		sessions: sessions,
+		history:  newHistory(config.History),
 	}
 }
 
@@ -33,6 +34,7 @@ type Manager struct {
 	logger   zerolog.Logger
 	config   *Config
 	sessions types.SessionManager
+	history  *history
 }
 
 type Settings struct {
@@ -87,22 +89,29 @@ func (m *Manager) sendMessage(session types.Session, content Content) {
 		return true
 	})
 
+	message := Message{
+		ID:      session.ID(),
+		Created: now,
+		Content: content,
+	}
+	m.history.add(HistoryMessage{Message: message, Name: session.Profile().Name})
+
 	// send content to all sessions
 	for _, s := range sessions {
-		s.Send(CHAT_MESSAGE, Message{
-			ID:      session.ID(),
-			Created: now,
-			Content: content,
-		})
+		s.Send(CHAT_MESSAGE, message)
 	}
 }
 
 func (m *Manager) Start() error {
-	// send init message once a user connects
+	// send init message once a user connects, with the recent messages if they may read them
 	m.sessions.OnConnected(func(session types.Session) {
-		session.Send(CHAT_INIT, Init{
+		payload := Init{
 			Enabled: m.config.Enabled,
-		})
+		}
+		if settings, err := m.settingsForSession(session); err == nil && settings.CanReceive {
+			payload.History = m.history.list()
+		}
+		session.Send(CHAT_INIT, payload)
 	})
 
 	return nil

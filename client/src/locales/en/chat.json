@@ -10,5 +10,6 @@
   },
   "muted": "muted {{name}}",
   "unmuted": "unmuted {{name}}",
-  "send_a_message": "Send a message"
+  "send_a_message": "Send a message",
+  "history": "↑ sent before you joined"
 }

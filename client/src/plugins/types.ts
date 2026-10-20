@@ -28,7 +28,11 @@ export interface Plugin {
 
 // the server's plugin events (server/internal/plugins/*/types.go) and their payloads
 export interface PluginEvents {
-  'chat/init': { enabled: boolean }
+  // history: the recent messages, oldest first, with their senders' names when sent (Tuna's server)
+  'chat/init': {
+    enabled: boolean
+    history?: { id: string; name: string; created: string; content: { text: string } }[]
+  }
   'chat/message': { id: string; created: string; content: { text: string } }
   'filetransfer/update': {
     enabled: boolean

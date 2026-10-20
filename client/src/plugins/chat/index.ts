@@ -7,7 +7,7 @@ import { useClient, useNeko } from '@/state/provider'
 import { t } from '@/i18n'
 import type { Plugin } from '@/plugins/types'
 import { Chat } from './Chat'
-import { chat as store, push } from './store'
+import { chat as store, prependHistory, push } from './store'
 import { mute, mutedByMe } from './actions'
 
 export const chat: Plugin = {
@@ -38,7 +38,24 @@ export const chat: Plugin = {
   ],
   onEvent(neko, ...[event, payload]) {
     const { client, app } = neko
-    if (event === 'chat/init') store(neko).setState({ enabled: payload.enabled })
+    if (event === 'chat/init') {
+      store(neko).setState({ enabled: payload.enabled })
+      // not counted as unread, no sound: they were sent before this connection
+      if (payload.history?.length)
+        prependHistory(
+          store(neko),
+          payload.history
+            .filter((m) => !app.getState().ignored[m.id])
+            .map((m) => ({
+              id: m.id,
+              name: m.name,
+              type: 'text' as const,
+              content: m.content.text,
+              created: new Date(m.created),
+            })),
+          t('chat:history'),
+        )
+    }
     if (event === 'chat/message') {
       if (app.getState().ignored[payload.id]) return
       push(store(neko), {
