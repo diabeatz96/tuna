@@ -1,6 +1,6 @@
 // Unit tests of the mascot's pixel art: `npm test` (vitest)
 import { expect, test } from 'vitest'
-import { FISH, FRAMES, PALETTE, toPaths } from './sprite'
+import { FISH, FRAMES, PALETTE, toPaths, YARN } from './sprite'
 
 test('every frame is a rectangle of the body size, drawn only with palette colors', () => {
   const [w, h] = [FRAMES.open[0].length, FRAMES.open.length]
@@ -11,7 +11,11 @@ test('every frame is a rectangle of the body size, drawn only with palette color
       for (const c of row) expect(c === '.' || c in PALETTE, `${name}: ${c}`).toBe(true)
     }
   }
-  for (const row of FISH) expect(row.length).toBe(FISH[0].length)
+  for (const sprite of [FISH, YARN])
+    for (const row of sprite) {
+      expect(row.length).toBe(sprite[0].length)
+      for (const c of row) expect(c === '.' || c in PALETTE, c).toBe(true)
+    }
 })
 
 test('toPaths: one path per color, a run of pixels is one rectangle', () => {

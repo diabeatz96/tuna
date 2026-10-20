@@ -10,6 +10,7 @@ import type { Dialog } from './dialogs'
 import type { Bus } from './bus'
 import type { Reaction } from './emotes'
 import type { Ping } from './pings'
+import type { Points } from './mascot'
 import { t } from '@/i18n'
 
 export const defaults = {
@@ -56,9 +57,16 @@ export function createAppStore() {
     pings: [] as Ping[],
     // when each member last cheered (an emote, a sound, a ping): their theater seat hops
     cheers: {} as Record<string, number>,
-    // the room's last emote, sound or ping, and its last feeding: the mascot's mood
+    // the room's last emote, sound, ping or play with the mascot: her mood (state/mascot.ts)
     activity: Date.now(),
     fed: { at: 0, by: '' },
+    petted: { at: 0, by: '' },
+    // the yarn ball's last throw: where it stops, a fraction of the video's width
+    ball: { at: 0, by: '', x: 0 },
+    // her tummy (0..100) when last fed; it empties over time
+    tummy: { level: 50, at: Date.now() },
+    // each member's Tuna points, as they announced them
+    points: {} as Record<string, Points>,
     ignored: {} as Record<string, boolean>,
     broadcast: { active: false, url: '' },
     keyboardLayouts: {} as Record<string, string>,

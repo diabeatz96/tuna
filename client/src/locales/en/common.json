@@ -101,25 +101,35 @@
     "button": "Ping a spot (or Alt+click the video)"
   },
   "sounds": {
-    "title": "Soundboard",
-    "airhorn": "Airhorn",
-    "rimshot": "Ba-dum-tss",
+    "title": "Cat Soundboard",
     "meow": "Meow",
-    "boing": "Boing",
-    "trombone": "Sad trombone"
+    "kitten": "Kitten",
+    "feedme": "Feed me!",
+    "hungry": "Hungry meow",
+    "purr": "Purr",
+    "hiss": "Hiss",
+    "yowl": "Yowl"
   },
   "mascot": {
-    "feed": "Feed Tuna a fish",
+    "play": "Play with Tuna",
+    "show": "Show Tuna",
+    "hide": "Hide Tuna",
+    "feed": "Feed",
+    "pet": "Pet",
+    "ball": "Yarn ball",
+    "tummy": "Tummy",
+    "points": "Tuna points",
+    "no_points": "Nobody has played with Tuna yet",
     "fed": "fed Tuna a fish 🐟"
   },
   "bingo": {
-    "tab": "Bingo",
-    "intro": "Anime trope bingo: everyone gets their own card. Tap a square when it happens on screen; the first full line wins.",
+    "tab": "Cat Bingo",
+    "intro": "Cat bingo: everyone gets their own card of cat moments. Tap a square when it happens; the first full line wins.",
     "start": "Start a round",
     "new_round": "New round",
     "end": "End",
     "round_by": "Round by {{name}}",
-    "started": "{{name}} started a bingo round",
+    "started": "{{name}} started a cat bingo round",
     "won": "{{name}} got BINGO!",
     "free": "Free"
   },

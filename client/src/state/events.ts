@@ -5,7 +5,7 @@ import { actions } from './actions'
 import { toast, tell, dismissToasts } from './dialogs'
 import { event } from './bus'
 import { EMOTES, showEmote } from './emotes'
-import { showFeed } from './mascot'
+import { announce, resetPoints, showBall, showFeed, showPet, showPoints } from './mascot'
 import { showPing } from './pings'
 import { chime } from './sound'
 import { hearSound, isSound } from './soundboard'
@@ -121,7 +121,19 @@ export function wireEvents(neko: NekoApp) {
     else if (subject === 'sound' && isSound(body)) hearSound(neko, sender, body)
     else if (subject === 'ping') showPing(app, sender, body?.x, body?.y)
     else if (subject === 'feed') showFeed(neko, sender)
+    else if (subject === 'pet') showPet(neko, sender)
+    else if (subject === 'ball') showBall(neko, sender, body?.x)
+    else if (subject === 'points') showPoints(neko, sender, body)
   })
+
+  // Tuna points: a new connection starts the room's list over and announces mine
+  client.store.subscribe(
+    (s) => s.session_id,
+    (id) => {
+      resetPoints(neko)
+      if (id) announce(neko)
+    },
+  )
 
   // plugin events (`chat/*`, ...) are dispatched by the plugin registry
   ev.on('message', (event, payload) => {

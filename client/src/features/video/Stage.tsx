@@ -5,6 +5,7 @@ import { selectControlling, selectIsAdmin } from '@m1k1o/neko'
 import { useTranslation } from 'react-i18next'
 import {
   ArrowsOutIcon,
+  CatIcon,
   ClipboardIcon,
   CrosshairIcon,
   EyeSlashIcon,
@@ -22,6 +23,7 @@ import { IconButton } from '@/components/IconButton'
 import { DropdownMenu, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Popover, PopoverTrigger } from '@/components/ui/popover'
 import { sendPing } from '@/state/pings'
+import { setSetting } from '@/state/settings'
 import { Emote } from '@/features/emotes/Emote'
 import { Reactions } from '@/features/emotes/Reactions'
 import { Pings, pointOnPicture } from '@/features/ping/Pings'
@@ -61,6 +63,7 @@ export function Stage({ hideControls, extraControls }: { hideControls: boolean; 
     })),
   )
   const emotes = useStore(app, (s) => s.emotes)
+  const mascot = useStore(app, (s) => s.settings.show_mascot)
   const player = useRef<HTMLDivElement>(null)
   const { fullscreen, request: requestFullscreen } = useFullscreen(player)
   const syncClipboard = useClipboardSync()
@@ -165,6 +168,18 @@ export function Stage({ hideControls, extraControls }: { hideControls: boolean; 
                 onClick={() => setPingMode(!pingMode)}
               >
                 <CrosshairIcon className="size-4" />
+              </IconButton>
+            </li>
+            <li className="mb-2.5 last:mb-0">
+              <IconButton
+                variant="video"
+                label={t(mascot ? 'mascot.hide' : 'mascot.show')}
+                className={cn(!mascot && 'opacity-50')}
+                aria-pressed={mascot}
+                data-testid="mascot-toggle"
+                onClick={() => setSetting(neko, 'show_mascot', !mascot)}
+              >
+                <CatIcon className="size-4" />
               </IconButton>
             </li>
             {admin && (

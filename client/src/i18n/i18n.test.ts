@@ -121,7 +121,7 @@ test('loader: reads exactly <lang>/<ns> from the glob map, nothing of the other 
 test('every language has the three files, en every key, the others all but the known gaps', () => {
   assert.deepEqual(readdirSync(new URL('../locales/', import.meta.url)).sort(), [...langs].sort())
   const en = Object.fromEntries(NS.map((ns) => [ns, flat(json('en', ns))]))
-  assert.equal(Object.keys(en.common).length + Object.keys(en.chat).length + Object.keys(en.files).length, 140)
+  assert.equal(Object.keys(en.common).length + Object.keys(en.chat).length + Object.keys(en.files).length, 150)
   // strings added since the translations: en only, until someone translates them
   const GAPS = [
     'controls.mic_on',
@@ -152,12 +152,22 @@ test('every language has the three files, en every key, the others all but the k
     'curtain.down_hint',
     'ping.button',
     'sounds.title',
-    'sounds.airhorn',
-    'sounds.rimshot',
     'sounds.meow',
-    'sounds.boing',
-    'sounds.trombone',
+    'sounds.kitten',
+    'sounds.feedme',
+    'sounds.hungry',
+    'sounds.purr',
+    'sounds.hiss',
+    'sounds.yowl',
+    'mascot.play',
+    'mascot.show',
+    'mascot.hide',
     'mascot.feed',
+    'mascot.pet',
+    'mascot.ball',
+    'mascot.tummy',
+    'mascot.points',
+    'mascot.no_points',
     'mascot.fed',
     'bingo.tab',
     'bingo.intro',

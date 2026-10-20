@@ -1,19 +1,19 @@
 import { useStore } from 'zustand'
-import { SquaresFourIcon } from '@phosphor-icons/react'
+import { PawPrintIcon } from '@phosphor-icons/react'
 import { isMuted } from '@/state/app'
 import { useNeko } from '@/state/provider'
 import type { Plugin } from '@/plugins/types'
 import { Bingo } from './Bingo'
 import { bingo as store, onBroadcast } from './store'
 
-// anime trope bingo: client-only, over the room's broadcasts (no server plugin), so its strings live
+// cat bingo: client-only, over the room's broadcasts (no server plugin), so its strings live
 // in `common`
 export const bingo: Plugin = {
   id: 'bingo',
   ns: 'common',
   tab: {
     id: 'bingo',
-    icon: SquaresFourIcon,
+    icon: PawPrintIcon,
     label: 'bingo.tab',
     component: Bingo,
     useBadge: () => useStore(store(useNeko()), (s) => s.news),

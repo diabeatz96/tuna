@@ -11,7 +11,9 @@ export const PALETTE: Record<string, string> = {
   p: '#16120f', // pupils
   n: '#c98a82', // nose and inner ears
   b: '#6fa8c9', // the fish
-  w: '#e9dfd1', // the fish's eye and belly
+  w: '#e9dfd1', // the fish's eye and belly, the eyes' shine
+  r: '#d9667a', // the yarn ball
+  R: '#a8455a', // its strands
 }
 
 // sitting, facing the viewer, the tongue out like the logo's; rows 6-10 are the eyes and 12-13 the
@@ -63,6 +65,7 @@ export const FRAMES = {
 export type Face = keyof typeof FRAMES
 
 export const FISH = ['.kkkk..k.', 'kbbbbkkbk', 'kpwbbbbbk', 'kwwwbkkbk', '.kkkk..k.']
+export const YARN = ['..kkk..', '.krRrk.', 'krrRrrk', 'kRrrRrk', 'krRrrRk', '.krrRk.', '..kkk..']
 // where the mouth is on the body grid: the fish lands there
 export const MOUTH = { x: 9, y: 12 }
 

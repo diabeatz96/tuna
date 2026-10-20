@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import { name } from '@/state/app'
 import { useNeko } from '@/state/provider'
 import { Button } from '@/components/ui/button'
+import logo from '@/assets/images/logo.svg'
 import { FREE } from './card'
 import { bingo, cardOf, end, mark, start } from './store'
 
@@ -24,7 +25,7 @@ export function Bingo() {
   if (!seed)
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-4 p-5 text-center" data-testid="bingo">
-        <div className="text-[40px]">🎴</div>
+        <img src={logo} alt="" className="h-16" />
         <p className="max-w-[260px] leading-5 text-text-muted">{t('bingo.intro')}</p>
         <Button data-testid="bingo-start" onClick={() => start(neko)}>
           {t('bingo.start')}
@@ -50,7 +51,7 @@ export function Bingo() {
       </div>
       {won && (
         <div className="animate-pop rounded-[5px] bg-style-primary py-1.5 text-center text-[20px] font-black text-white">
-          BINGO!
+          🐾 BINGO! 🐾
         </div>
       )}
       {winners.length > 0 && (
@@ -70,13 +71,28 @@ export function Bingo() {
               aria-pressed={on}
               data-testid="bingo-square"
               className={cn(
-                'flex aspect-square items-center justify-center rounded-[4px] p-1 text-center text-[10px] leading-[1.15] break-words transition-colors',
+                'relative flex aspect-square items-center justify-center overflow-hidden rounded-[4px] p-1 text-center text-[10px] leading-[1.15] break-words transition-colors',
                 on ? 'bg-style-primary text-white' : 'bg-background-tertiary hover:bg-background-accent',
-                free && 'cursor-default font-bold',
+                free && 'cursor-default flex-col gap-0.5 font-bold',
               )}
               onClick={() => mark(neko, i)}
             >
-              {free ? `🐟 ${t('bingo.free')}` : trope}
+              {free ? (
+                <>
+                  <img src={logo} alt="" className="h-1/2" />
+                  {t('bingo.free')}
+                </>
+              ) : (
+                <>
+                  {/* a paw stamped on a marked square, behind its text */}
+                  {on && (
+                    <span className="absolute inset-0 flex animate-pop items-center justify-center text-[28px] opacity-30">
+                      🐾
+                    </span>
+                  )}
+                  <span className="relative">{trope}</span>
+                </>
+              )}
             </button>
           )
         })}
