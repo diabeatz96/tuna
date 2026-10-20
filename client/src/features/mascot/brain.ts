@@ -221,7 +221,10 @@ export type Act =
   | 'crouch'
   | 'leap'
   | 'grump'
-export type Idle = 'wander' | 'groom' | 'yawn' | 'look' | 'blep' | 'tail' | 'chatter' | 'zoomies' | 'bat' | 'loaf'
+  | 'lounge'
+  | 'judge'
+export type Idle =
+  'wander' | 'groom' | 'yawn' | 'look' | 'blep' | 'tail' | 'chatter' | 'zoomies' | 'bat' | 'loaf' | 'lounge' | 'judge'
 export interface IdleContext {
   hour: number // the viewer's local hour
   talk: Talk
@@ -230,6 +233,7 @@ export interface IdleContext {
   pumpkin: boolean // there is a pumpkin to bat
 }
 // by weight; sleepy and wild at night (zoomies only with nothing playing), lazy in the afternoon
+// (a catnap stretched out, a long lounge on her side), and now and then an unimpressed look
 export function idleWeights({ hour, talk, showing, tucked, pumpkin }: IdleContext): [Idle, number][] {
   const night = hour < 5
   const dusk = hour >= 18 && hour < 22
@@ -246,6 +250,8 @@ export function idleWeights({ hour, talk, showing, tucked, pumpkin }: IdleContex
     ['zoomies', wild ? (night ? 0.6 : dusk ? 0.4 : 0.1) : 0],
     ['bat', pumpkin ? 1.5 : 0],
     ['loaf', afternoon || night ? 1 : 0],
+    ['lounge', afternoon ? 2 : 1],
+    ['judge', 1],
   ]
 }
 export function pickIdle(rng: () => number, ctx: IdleContext): Idle {
@@ -264,6 +270,8 @@ export const IDLE_MS: Record<Exclude<Idle, 'wander' | 'chatter' | 'zoomies'>, nu
   tail: 2400,
   bat: 2400,
   loaf: 9000,
+  lounge: 12_000,
+  judge: 2600,
 }
 
 // what she tends to do right after something: groom after eating, after zoomies ("I meant to do

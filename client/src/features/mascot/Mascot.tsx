@@ -6,7 +6,7 @@ import type { Cue } from '@/state/bus'
 import { napped, tummy } from '@/state/mascot'
 import { useNeko } from '@/state/provider'
 import { Popover, PopoverTrigger } from '@/components/ui/popover'
-import { Bubble, PixelCat, Toy, useBlink, useCycle, type Frame } from '@/components/tuna/PixelCat'
+import { Bubble, PixelCat, sideways, Toy, useBlink, useCycle, type Frame } from '@/components/tuna/PixelCat'
 import {
   after,
   HOP_MS,
@@ -251,6 +251,7 @@ export function Mascot() {
           ready: ['happy', 1000, false],
           go: ['happy', 1500, true],
           show: ['wide', 1200, false],
+          rate: ['judge', 2400, false],
           bingo: ['happy', 2000, true],
         }
         const r = react[cue.kind]
@@ -505,7 +506,9 @@ export function Mascot() {
   else if (kind === 'crouch') frame = crouchFrame
   else if (sulking) frame = kind === 'groom' ? 'groom' : 'grump'
   else if (inBox) frame = asleep ? 'boxed_blink' : kind === 'happy' ? 'boxed_happy' : 'boxed'
-  else if (asleep || kind === 'loaf') frame = 'sleep'
+  // asleep curled in a loaf or stretched out flat, one or the other for a whole nap
+  else if (asleep) frame = Math.floor(activity / 1000) % 2 ? 'sprawl' : 'sleep'
+  else if (kind === 'loaf') frame = 'sprawl'
   else if (kind === 'tail') frame = tailFrame
   else if (kind === 'look') frame = lookFrame
   else if (kind === 'bat') frame = batFrame
@@ -518,7 +521,8 @@ export function Mascot() {
   const W = 32 * scale
   const along = (at: number, offset = 0) => `calc(${10 + offset}px + ${at} * (100% - ${W + 20}px))`
   const right = x > 0.65
-  const flip = facing < 0 && (moving || kind === 'crouch')
+  // seen from the side she faces the way she last went
+  const flip = facing < 0 && sideways(frame)
 
   return (
     <>

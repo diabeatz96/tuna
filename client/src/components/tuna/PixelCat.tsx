@@ -129,8 +129,12 @@ const BLINKS: Partial<Record<Frame, Frame>> = {
   look_l: 'blink',
   look_r: 'blink',
   plead: 'blink',
+  judge: 'blink',
   boxed: 'boxed_blink',
 }
+
+// a frame seen from the side (facing right; flip it to face left)
+export const sideways = (frame: Frame) => FAMILY[frame] !== 'sit' && FAMILY[frame] !== 'loaf'
 
 // Tuna blinking now and then: the frame to show instead of `frame`
 export function useBlink(frame: Frame, on = true) {
