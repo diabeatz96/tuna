@@ -1,7 +1,24 @@
-# Tuna image: the upstream neko image with the Tuna client layered on top.
-# Fast to build because only the client is compiled. Switch to the full
-# ./build script once the Go server has changes of its own.
+# Tuna image: the upstream neko Brave image (the desktop, Brave, Xorg, the
+# runtime libraries) with this repo's server and client built on top. Only
+# the two are compiled, so a build takes minutes, not the hour of the full
+# ./build script. The server stage is upstream's server/Dockerfile; both are
+# Debian trixie, so the binary matches the base image's libraries.
 ARG BASE_IMAGE=ghcr.io/m1k1o/neko/brave:latest
+
+FROM golang:1.25-trixie AS server
+WORKDIR /src
+ENV DEBIAN_FRONTEND=noninteractive
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        libx11-dev libxrandr-dev libxtst-dev libgtk-3-dev libxcvt-dev \
+        libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev; \
+    rm -rf /var/lib/apt/lists/*
+# the modules first, so a code change does not download them again
+COPY server/go.mod server/go.sum ./
+RUN go mod download
+COPY server/ .
+RUN ./build
 
 FROM node:24-trixie-slim AS client
 WORKDIR /src
@@ -14,6 +31,8 @@ FROM ${BASE_IMAGE}
 LABEL org.opencontainers.image.source="https://github.com/diabeatz96/tuna"
 LABEL org.opencontainers.image.description="Tuna: a self hosted virtual browser for watching and browsing together. Based on n.eko by m1k1o."
 LABEL org.opencontainers.image.licenses="Apache-2.0"
+COPY --from=server /src/bin/plugins/ /etc/neko/plugins/
+COPY --from=server /src/bin/neko /usr/bin/neko
 COPY --from=client /src/dist/ /var/www
 
 # Launch Brave through a wrapper that clears stale profile locks, and drop

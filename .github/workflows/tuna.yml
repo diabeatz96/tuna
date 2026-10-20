@@ -5,6 +5,7 @@ on:
     branches: [tuna]
     paths:
       - "client/**"
+      - "server/**"
       - "deploy/Dockerfile"
       - "deploy/brave-launch.sh"
       - ".github/workflows/tuna.yml"
