@@ -22,9 +22,11 @@ export type CueKind =
   | 'show' // something new plays
   | 'rate' // the room is asked to rate what played
   | 'bingo' // someone got bingo (name)
+  | 'chat' // someone else said something in the chat (name, text): she shows it in fullscreen
 export interface Cue {
   kind: CueKind
   name?: string
+  text?: string
 }
 export const createBus = (): Bus => new Emitter()
 

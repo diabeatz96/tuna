@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { PlayIcon, SquareIcon } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import { useActions } from '@/state/actions'
-import { ROOM_TOGGLES } from '@/state/app'
+import { ROOM_TOGGLES, TALKS, type Talk } from '@/state/app'
 import { useNeko } from '@/state/provider'
 import { setSetting } from '@/state/settings'
 import { Button } from '@/components/ui/button'
@@ -89,7 +89,7 @@ export function Settings() {
       | 'ignore_sounds'
       | 'theater_seats'
       | 'show_mascot'
-      | 'tuna_talks'
+      | 'tuna_chat'
       | 'links_in_app',
     name: string,
   ) => (
@@ -124,7 +124,27 @@ export function Settings() {
         {toggle('ignore_sounds', 'ignore_sounds')}
         {toggle('theater_seats', 'theater_seats')}
         {toggle('show_mascot', 'show_mascot')}
-        {toggle('tuna_talks', 'tuna_talks')}
+        <li className={row}>
+          <span className={label}>{t('setting.tuna_talk')}</span>
+          <label className="max-w-[120px] text-right">
+            <select
+              className={cn(
+                field,
+                'w-full max-w-full cursor-pointer appearance-none pr-[5px] pl-2.5 text-right text-[12px] hover:border-background-secondary [&_option]:bg-background-tertiary [&_option]:font-normal [&_option]:text-text-normal',
+              )}
+              value={s.tuna_talk}
+              onChange={(e) => setSetting(neko, 'tuna_talk', e.target.value as Talk)}
+              data-testid="setting-tuna-talk"
+            >
+              {TALKS.map((k) => (
+                <option key={k} value={k}>
+                  {t(`mascot.talk_${k}`)}
+                </option>
+              ))}
+            </select>
+          </label>
+        </li>
+        {toggle('tuna_chat', 'tuna_chat')}
         {openInApp && toggle('links_in_app', 'links_in_app')}
         <li className={row}>
           <span className={label}>{t('setting.keyboard_layout')}</span>

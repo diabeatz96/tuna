@@ -10,7 +10,7 @@ import type { Dialog } from './dialogs'
 import type { Bus } from './bus'
 import type { Reaction } from './emotes'
 import type { Ping } from './pings'
-import type { Hat, Points } from './mascot'
+import type { Hat, Points, Tummy } from './mascot'
 import { t } from '@/i18n'
 
 export const defaults = {
@@ -26,18 +26,27 @@ export const defaults = {
   ignore_sounds: false,
   // everyone's avatar in a row of seats along the bottom of the video
   theater_seats: false,
-  // Tuna the cat on the video (features/mascot), and her speech bubbles
+  // Tuna the cat on the video (features/mascot), how much she says, and whether she brings the
+  // chat into fullscreen (where the side panel is not seen)
   show_mascot: true,
-  tuna_talks: true,
+  tuna_talk: 'normal' as Talk,
+  tuna_chat: true,
   // open chat links on the remote desktop instead of locally (needs the openinapp plugin)
   links_in_app: false,
   keyboard_layout: 'us',
 }
 export type ViewerSettings = typeof defaults
 
+// how much Tuna says: nothing, now and then, or a lot
+export const TALKS = ['quiet', 'normal', 'chatty'] as const
+export type Talk = (typeof TALKS)[number]
+
 function load(): ViewerSettings {
   const out = { ...defaults }
   for (const k of Object.keys(defaults) as (keyof ViewerSettings)[]) (out as any)[k] = get(k, defaults[k])
+  if (!TALKS.includes(out.tuna_talk)) out.tuna_talk = defaults.tuna_talk
+  // before the three levels her bubbles were on or off
+  if (get('tuna_talk', '') === '' && !get('tuna_talks', true)) out.tuna_talk = 'quiet'
   return out
 }
 
@@ -64,8 +73,11 @@ export function createAppStore() {
     petted: { at: 0, by: '' },
     // the yarn ball's last throw: where it stops, a fraction of the video's width
     ball: { at: 0, by: '', x: 0 },
-    // her tummy (0..100) when last fed; it empties over time
-    tummy: { level: 50, at: Date.now() },
+    // a laser dot's last run (its path comes from the seed), and a box set down for her
+    laser: { at: 0, by: '', seed: 0 },
+    box: { at: 0, by: '', x: 0 },
+    // her tummy (0..100) at a time; it empties over time (state/mascot.ts)
+    tummy: { level: 50, at: Date.now(), fed: 0 } as Tummy,
     // the hat she wears, picked by someone in the room at a time (the newest pick wins)
     hat: { name: '' as Hat, at: 0, by: '' },
     // each member's Tuna points, as they announced them

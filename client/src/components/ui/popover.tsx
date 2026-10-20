@@ -12,9 +12,11 @@ function PopoverTrigger(props: ComponentProps<typeof PopoverPrimitive.Trigger>) 
   return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />
 }
 
+// in fullscreen only the fullscreen element is drawn, so a box opened then (Tuna's menu, over the
+// video) goes inside it
 function PopoverContent({ className, sideOffset = 4, ...props }: ComponentProps<typeof PopoverPrimitive.Content>) {
   return (
-    <PopoverPrimitive.Portal>
+    <PopoverPrimitive.Portal container={document.fullscreenElement ?? undefined}>
       <PopoverPrimitive.Content
         data-slot="popover-content"
         sideOffset={sideOffset}

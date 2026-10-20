@@ -122,7 +122,17 @@ export function useCycle<T>(frames: readonly T[], ms: number, on = true) {
   return frames[i % frames.length]
 }
 
-// Tuna blinking now and then: the frame to show instead of `frame` (sitting frames only)
+// the frames she blinks in, and how
+const BLINKS: Partial<Record<Frame, Frame>> = {
+  sit: 'blink',
+  sit_tail: 'blink',
+  look_l: 'blink',
+  look_r: 'blink',
+  plead: 'blink',
+  boxed: 'boxed_blink',
+}
+
+// Tuna blinking now and then: the frame to show instead of `frame`
 export function useBlink(frame: Frame, on = true) {
   const [blink, setBlink] = useState(false)
   useEffect(() => {
@@ -140,24 +150,27 @@ export function useBlink(frame: Frame, on = true) {
     next()
     return () => clearTimeout(t)
   }, [on])
-  return blink && on && FAMILY[frame] === 'sit' ? 'blink' : frame
+  return (blink && on && BLINKS[frame]) || frame
 }
 
-// a pixel speech bubble, its tail at the bottom left (or right)
+// a pixel speech bubble, its tail at the bottom left (or right); above whatever holds it, or
+// `inline` in a stack of bubbles
 export function Bubble({
   children,
   right = false,
+  inline = false,
   className,
 }: {
   children: ReactNode
   right?: boolean
+  inline?: boolean
   className?: string
 }) {
   return (
     <span
       className={cn(
-        'pixel-bubble pointer-events-none absolute bottom-full mb-3 animate-pop px-2 py-1 font-mono text-[11px] leading-4 font-bold whitespace-nowrap text-[#1b1714]',
-        right ? 'right-1' : 'left-1',
+        'pixel-bubble pointer-events-none animate-pop px-2 py-1 font-mono text-[11px] leading-4 font-bold whitespace-nowrap text-[#1b1714]',
+        inline ? 'relative block w-max' : ['absolute bottom-full mb-3', right ? 'right-1' : 'left-1'],
         className,
       )}
     >

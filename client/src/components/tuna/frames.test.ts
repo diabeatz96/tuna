@@ -27,8 +27,17 @@ test('the sitting frames are one size, so she does not jump between them', () =>
 
 test('every hat has art and a place, and the room can pick exactly these', () => {
   expect(HAT_NAMES.filter(Boolean).sort()).toEqual(Object.keys(HATS).sort())
-  for (const name of Object.keys(HATS)) expect(['top', 'ear']).toContain(HAT_SPOT[name as keyof typeof HATS])
-  for (const family of Object.values(FAMILY)) expect(SPOTS[family]).toBeDefined()
+  for (const name of Object.keys(HATS)) expect(['top', 'ear', 'neck']).toContain(HAT_SPOT[name as keyof typeof HATS])
+  for (const family of Object.values(FAMILY)) expect(Object.keys(SPOTS[family]).sort()).toEqual(['ear', 'neck', 'top'])
+})
+
+test('the side views (walking, crouching, the leap) are one size too', () => {
+  const sizes = new Set(
+    Object.entries(FRAMES)
+      .filter(([f]) => ['walk', 'crouch', 'leap'].includes(FAMILY[f as keyof typeof FAMILY]))
+      .map(([, g]) => `${g[0].length}x${g.length}`),
+  )
+  expect([...sizes]).toEqual(['32x22'])
 })
 
 test('toPaths: one path per color, a run of pixels is one rectangle, worked out once', () => {

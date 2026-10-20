@@ -20,12 +20,22 @@ const PALETTE = {
   r: '#d9667a', // red: hats, yarn
   R: '#a8455a', // dark red
   y: '#e8c547', // gold
-  b: '#6fa8c9', // blue: the fish
+  b: '#6fa8c9', // blue: the fish, the scarf
+  g: '#e58a3a', // the pumpkin
+  G: '#b5622a',
+  q: '#6f8f3e', // its stem
+  v: '#7a5a9e', // the witch hat
+  V: '#553d75',
+  o: '#c8955a', // the cardboard box
+  O: '#9a6b3a',
+  x: '#ff4d5e', // the laser dot
 }
 
 // a canvas of w x h pixels, '.' clear; shapes are filled by pixel centers
 const canvas = (w, h) => Array.from({ length: h }, () => Array(w).fill('.'))
 const put = (g, x, y, c) => {
+  x = Math.round(x)
+  y = Math.round(y)
   if (y >= 0 && y < g.length && x >= 0 && x < g[0].length) g[y][x] = c
 }
 function ellipse(g, cx, cy, rx, ry, c) {
@@ -75,6 +85,10 @@ const EYES = {
   squeeze: ['......', 'kkk...', '...kkk', 'kkk...', '......', '......'],
   love: ['......', 'rr..rr', 'rrrrrr', '.rrrr.', '..rr..', '......'],
   sleep: ['......', '......', 'k....k', '.kkkk.', '......', '......'],
+  // begging: all pupil, two shines
+  plead: ['.kkkk.', 'kppppk', 'kpwppk', 'kppppk', 'kppwpk', '.kkkk.'],
+  // fed up: the lids half down, looking aside
+  grump: ['......', '......', 'kkkkkk', 'keepek', '.kkkk.', '......'],
 }
 
 function eyes(g, kind, dy = 0) {
@@ -133,6 +147,18 @@ function mouth(g, kind, dy = 0) {
       'n',
     )
   }
+  if (kind === 'frown') {
+    dots(
+      g,
+      [
+        [11, 15 + dy],
+        [12, 14 + dy],
+        [13, 14 + dy],
+        [14, 15 + dy],
+      ],
+      'k',
+    )
+  }
   if (kind === 'yawn') {
     ellipse(g, 13, 15.6 + dy, 2.1, 1.8, 'p')
     dots(
@@ -165,44 +191,52 @@ const TAILS = {
   ],
 }
 
-function head(g, dy = 0) {
+// her ears, up or flattened sideways (fed up), the left one; the right one mirrors it
+const EARS = {
+  up: {
+    ear: [
+      [3.4, 9.6],
+      [5, 0.4],
+      [11.2, 4.4],
+    ],
+    pink: [
+      [5.3, 6.9],
+      [5.9, 2.4],
+      [9.6, 4.8],
+    ],
+  },
+  flat: {
+    ear: [
+      [3.2, 10],
+      [0.3, 4.6],
+      [9.4, 5],
+    ],
+    pink: [
+      [3.6, 8.4],
+      [1.9, 5.5],
+      [7.4, 5.6],
+    ],
+  },
+}
+
+function head(g, dy = 0, ears = 'up') {
   // the ears, their pink, the head
-  poly(
-    g,
-    [
-      [3.4, 9.6 + dy],
-      [5, 0.4 + dy],
-      [11.2, 4.4 + dy],
-    ],
-    'd',
-  )
-  poly(
-    g,
-    [
-      [22.6, 9.6 + dy],
-      [21, 0.4 + dy],
-      [14.8, 4.4 + dy],
-    ],
-    'd',
-  )
-  poly(
-    g,
-    [
-      [5.3, 6.9 + dy],
-      [5.9, 2.4 + dy],
-      [9.6, 4.8 + dy],
-    ],
-    'n',
-  )
-  poly(
-    g,
-    [
-      [20.7, 6.9 + dy],
-      [20.1, 2.4 + dy],
-      [16.4, 4.8 + dy],
-    ],
-    'n',
-  )
+  const { ear, pink } = EARS[ears]
+  for (const [pts, c] of [
+    [ear, 'd'],
+    [pink, 'n'],
+  ]) {
+    poly(
+      g,
+      pts.map(([x, y]) => [x, y + dy]),
+      c,
+    )
+    poly(
+      g,
+      pts.map(([x, y]) => [26 - x, y + dy]),
+      c,
+    )
+  }
   ellipse(g, 13, 10.6 + dy, 9.7, 7.5, 'd')
   // the tabby M on her forehead, the stripes on her cheeks
   mirror(
@@ -237,7 +271,10 @@ function head(g, dy = 0) {
   )
 }
 
-function sitting({ eyes: e = 'open', mouth: m = 'w', tail = 'down', paw = false } = {}) {
+// a paw raised at her mouth (grooming); batting at something, a leg reaches out to the side
+const PAWS = { groom: [15.8, 16.2] }
+
+function sitting({ eyes: e = 'open', mouth: m = 'w', tail = 'down', paw = '', ears = 'up', box = false } = {}) {
   const g = canvas(26, 26)
   stroke(g, TAILS[tail], 1.15, 'd')
   dots(g, [TAILS[tail].at(-1).map(Math.round)], 'm')
@@ -255,7 +292,22 @@ function sitting({ eyes: e = 'open', mouth: m = 'w', tail = 'down', paw = false 
   ellipse(g, 13, 20.4, 3.6, 4.3, 'l')
   ellipse(g, 10.2, 24.6, 2, 1.25, 'l')
   ellipse(g, 15.8, 24.6, 2, 1.25, 'l')
-  head(g)
+  if (paw === 'bat') {
+    // a front leg reaching out to her side, its paw up
+    stroke(
+      g,
+      [
+        [16.4, 19.2],
+        [18.4, 18],
+        [20.4, 16.8],
+        [22, 15.8],
+      ],
+      1.1,
+      'd',
+    )
+    ellipse(g, 22.9, 15.2, 1.6, 1.4, 'l')
+  }
+  head(g, 0, ears)
   outline(g)
   // the chin's shadow on the body
   dots(
@@ -270,10 +322,55 @@ function sitting({ eyes: e = 'open', mouth: m = 'w', tail = 'down', paw = false 
   )
   eyes(g, e)
   mouth(g, m)
-  if (paw) {
-    // a paw up at her mouth: grooming
-    ellipse(g, 15.8, 16.2, 1.9, 1.6, 'k')
-    ellipse(g, 15.8, 16.2, 1.1, 0.8, 'l')
+  if (PAWS[paw]) {
+    const [px, py] = PAWS[paw]
+    ellipse(g, px, py, 1.9, 1.6, 'k')
+    ellipse(g, px, py, 1.1, 0.8, 'l')
+  }
+  if (box) {
+    // sitting in a cardboard box: its flaps, its front, a strip of tape
+    poly(
+      g,
+      [
+        [3, 19],
+        [0.2, 15.6],
+        [4.4, 15.6],
+        [7.2, 19],
+      ],
+      'O',
+    )
+    poly(
+      g,
+      [
+        [23, 19],
+        [25.8, 15.6],
+        [21.6, 15.6],
+        [18.8, 19],
+      ],
+      'O',
+    )
+    poly(
+      g,
+      [
+        [3, 19],
+        [23, 19],
+        [22.6, 26],
+        [3.4, 26],
+      ],
+      'o',
+    )
+    for (let x = 3; x <= 22; x++) put(g, x, 19, 'k')
+    for (let y = 20; y <= 21; y++) for (let x = 4; x <= 21; x++) put(g, x, y, 'O')
+    for (let y = 20; y <= 25; y++)
+      dots(
+        g,
+        [
+          [12, y],
+          [13, y],
+        ],
+        'c',
+      )
+    outline(g)
   }
   return g
 }
@@ -360,67 +457,171 @@ function walking(step) {
     'm',
   )
   ellipse(g, 16, 15, 5, 1.8, 'l')
-  // the ears, the head, the muzzle
+  sideHead(g)
+  outline(g)
+  sideFace(g)
+  return g
+}
+
+// her head from the side, facing right, moved by (dx, dy): the ears, the head, the muzzle
+function sideHead(g, dx = 0, dy = 0) {
+  const at = (pts) => pts.map(([x, y]) => [x + dx, y + dy])
   poly(
     g,
-    [
+    at([
       [19.4, 5.4],
       [20.4, 0.4],
       [24, 3.4],
-    ],
+    ]),
     'd',
   )
   poly(
     g,
-    [
+    at([
       [24.2, 3.2],
       [27.4, 0.4],
       [28.8, 5.2],
-    ],
+    ]),
     'd',
   )
   poly(
     g,
-    [
+    at([
       [25.4, 3.4],
       [27, 1.6],
       [27.8, 4.2],
-    ],
+    ]),
     'n',
   )
-  ellipse(g, 24.2, 8.6, 5.6, 5.1, 'd')
+  ellipse(g, 24.2 + dx, 8.6 + dy, 5.6, 5.1, 'd')
   dots(
     g,
-    [
+    at([
       [21, 5],
       [22, 4],
       [22, 5],
+    ]),
+    'm',
+  )
+  ellipse(g, 27.6 + dx, 10.4 + dy, 2.6, 1.8, 'l')
+}
+
+// and its face, drawn after the outline: the nose, the mouth, a blush, the eye (wide: hunting)
+function sideFace(g, dx = 0, dy = 0, eye = 'open') {
+  dx = Math.round(dx)
+  dy = Math.round(dy)
+  dots(
+    g,
+    [
+      [29 + dx, 9 + dy],
+      [30 + dx, 9 + dy],
+    ],
+    'n',
+  )
+  dots(
+    g,
+    [
+      [28 + dx, 11 + dy],
+      [29 + dx, 11 + dy],
+    ],
+    'k',
+  )
+  dots(g, [[24 + dx, 10 + dy]], 'n')
+  art(eye === 'wide' ? ['.kk.', 'kppk', 'kwpk', '.kk.'] : ['.kk.', 'kwpk', 'kepk', '.kk.']).forEach((row, y) =>
+    row.forEach((c, x) => c !== '.' && put(g, 24 + dx + x, 5 + dy + y, c)),
+  )
+}
+
+// a leg from the side, from the body down to its paw
+function leg(g, from, to, c) {
+  const n = 6
+  stroke(
+    g,
+    Array.from({ length: n + 1 }, (_, i) => [
+      from[0] + ((to[0] - from[0]) * i) / n,
+      from[1] + ((to[1] - from[1]) * i) / n,
+    ]),
+    0.9,
+    c,
+  )
+  ellipse(g, to[0], to[1], 1.1, 0.8, 'l')
+}
+
+// hunting: low down, her bottom up and wiggling (`wiggle` 0 or 1), eyes on the prey; 32 x 22
+function crouching(wiggle) {
+  const g = canvas(32, 22)
+  const w = wiggle ? 0.7 : -0.7
+  stroke(
+    g,
+    [
+      [5.5, 13.5],
+      [4.2 + w, 12.2],
+      [3.2 + w, 10.6],
+      [2.8 + w, 8.8],
+      [3.2 + w, 7.2],
+    ],
+    1.1,
+    'd',
+  )
+  dots(g, [[Math.round(3.2 + w), 7]], 'm')
+  leg(g, [8, 16], [7.4 + w / 2, 20], 's')
+  leg(g, [11, 17], [11.2, 20.2], 'd')
+  leg(g, [18, 17.4], [19.6, 20.4], 's')
+  leg(g, [21, 17.4], [23, 20.4], 'd')
+  // the body, low at the front
+  ellipse(g, 13.6 + w / 3, 14.6, 9, 3.8, 'd')
+  ellipse(g, 18.4, 16.8, 5.2, 2.4, 'd')
+  dots(
+    g,
+    [
+      [9, 11],
+      [12, 11],
+      [12, 12],
+      [15, 12],
     ],
     'm',
   )
-  ellipse(g, 27.6, 10.4, 2.6, 1.8, 'l')
+  ellipse(g, 16.6, 17.4, 4.6, 1.5, 'l')
+  sideHead(g, 0.4, 5)
   outline(g)
-  dots(
+  sideFace(g, 0.4, 5, 'wide')
+  return g
+}
+
+// the pounce: stretched out in the air, front paws reaching; 32 x 22
+function leaping() {
+  const g = canvas(32, 22)
+  stroke(
     g,
     [
-      [29, 9],
-      [30, 9],
+      [5, 10.6],
+      [3.6, 10],
+      [2.2, 9.2],
+      [1.2, 8.2],
     ],
-    'n',
-  ) // the nose
-  dots(
-    g,
-    [
-      [28, 11],
-      [29, 11],
-    ],
-    'k',
-  ) // the mouth
-  dots(g, [[24, 10]], 'n') // blush
-  // the eye
-  art(['.kk.', 'kwpk', 'kepk', '.kk.']).forEach((row, y) =>
-    row.forEach((c, x) => c !== '.' && put(g, 24 + x, 5 + y, c)),
+    1.05,
+    'd',
   )
+  dots(g, [[1, 8]], 'm')
+  leg(g, [7.5, 12.4], [3.4, 16.6], 's')
+  leg(g, [10, 13], [6.6, 17.6], 'd')
+  leg(g, [20, 12.6], [26.4, 15.8], 's')
+  leg(g, [22, 12], [28.4, 13.8], 'd')
+  ellipse(g, 14.6, 10.8, 10.2, 3.7, 'd')
+  dots(
+    g,
+    [
+      [10, 8],
+      [13, 7],
+      [13, 8],
+      [16, 8],
+    ],
+    'm',
+  )
+  ellipse(g, 15.6, 13, 6, 1.4, 'l')
+  sideHead(g, 1, 0.6)
+  outline(g)
+  sideFace(g, 1, 0.6, 'wide')
   return g
 }
 
@@ -439,11 +640,32 @@ const HATS = {
   bow: hat(['rr...rr', 'rrrRrrr', 'rr...rr']),
   beanie: hat(['....ccc....', '...rrrrr...', '..rrRrRrr..', '.rrrrrrrrr.', 'ccccccccccc']),
   flower: hat(['.n..n.', 'nnnnnn', '.nyyn.', '.nyyn.', 'nnnnnn', '.n..n.']),
+  witch: hat([
+    '.......vv..',
+    '......vv...',
+    '.....vvv...',
+    '....vvvv...',
+    '....vvvvv..',
+    '...vvvvvv..',
+    '...yyyyyy..',
+    'vvvvvvvvvvv',
+    '.VVVVVVVVV.',
+  ]),
+  scarf: hat(['.bbbbbbbbb.', 'bbcbbcbbcbb', '......bcb..', '......bbb..', '......bcb..']),
 }
-// where each hat goes: on her head's top (the middle of the hat's bottom row) or on her ear
-const HAT_SPOT = { party: 'top', crown: 'top', bow: 'ear', beanie: 'top', flower: 'ear' }
+// where each thing goes: on her head's top (the middle of its bottom row), on her ear, or round
+// her neck
+const HAT_SPOT = {
+  party: 'top',
+  crown: 'top',
+  bow: 'ear',
+  beanie: 'top',
+  flower: 'ear',
+  witch: 'top',
+  scarf: 'neck',
+}
 
-// ---- her toys and her bubbles' bits ----
+// ---- her toys, her things and her bubbles' bits ----
 
 const TOYS = {
   fish: art(['.kkkk..k.', 'kbbbbkkbk', 'kpwbbbbbk', 'kwwwbkkbk', '.kkkk..k.']),
@@ -451,6 +673,20 @@ const TOYS = {
   heart: art(['.kk.kk.', 'krrkrrk', 'krrrrrk', '.krrrk.', '..krk..', '...k...']),
   zzz: art(['kkkk', '..k.', '.k..', 'kkkk']),
   sparkle: art(['..y..', '..y..', 'yyyyy', '..y..', '..y..']),
+  // her food bowl, empty
+  bowl: hat(['ccccccccc', '.rrrrrrr.', '.rRrRrRr.', '..rrrrr..']),
+  pumpkin: hat(['....q....', '...qq....', '.ggGgGgg.', 'gggGgGggg', 'gggGgGggg', 'gggGgGggg', '.ggGgGgg.']),
+  laser: art(['.x.', 'xwx', '.x.']),
+  box: hat([
+    'O............O',
+    'OO..........OO',
+    '.OOssssssssOO.',
+    '..kkkkkkkkkk..',
+    '..oOOOOOOOOo..',
+    '..ooooccoooo..',
+    '..ooooccoooo..',
+    '..ooooccoooo..',
+  ]),
 }
 
 // ---- the frames, by name; a family says where her head is ----
@@ -466,20 +702,42 @@ const FRAMES = {
   love: sitting({ eyes: 'love', mouth: 'blep', tail: 'up' }),
   wide: sitting({ eyes: 'wide', mouth: 'open' }),
   eat: sitting({ eyes: 'happy', mouth: 'open' }),
-  groom: sitting({ eyes: 'happy', paw: true }),
+  groom: sitting({ eyes: 'happy', paw: 'groom' }),
   yawn: sitting({ eyes: 'squeeze', mouth: 'yawn' }),
+  plead: sitting({ eyes: 'plead', tail: 'up' }),
+  grump: sitting({ eyes: 'grump', mouth: 'frown', ears: 'flat' }),
+  bat: sitting({ eyes: 'look_r', mouth: 'open', paw: 'bat', tail: 'up' }),
+  boxed: sitting({ box: true }),
+  boxed_blink: sitting({ eyes: 'blink', box: true }),
+  boxed_happy: sitting({ eyes: 'happy', box: true }),
   sleep: loaf(),
   walk_1: walking(0),
   walk_2: walking(1),
+  crouch_1: crouching(0),
+  crouch_2: crouching(1),
+  leap: leaping(),
 }
-// her head's top middle and her right ear, per family, in frame pixels
+// her head's top middle, her right ear and her neck, per family, in frame pixels
 const SPOTS = {
-  sit: { top: [13, 4], ear: [20, 3] },
-  loaf: { top: [13, 9], ear: [20, 8] },
-  walk: { top: [24, 4], ear: [27, 2] },
+  sit: { top: [13, 4], ear: [20, 3], neck: [13, 22] },
+  loaf: { top: [13, 9], ear: [20, 8], neck: [13, 26] },
+  walk: { top: [24, 4], ear: [27, 2], neck: [22, 17] },
+  crouch: { top: [24, 9], ear: [27, 7], neck: [22, 21] },
+  leap: { top: [25, 5], ear: [28, 3], neck: [23, 17] },
 }
 const FAMILY = Object.fromEntries(
-  Object.keys(FRAMES).map((k) => [k, k === 'sleep' ? 'loaf' : k.startsWith('walk') ? 'walk' : 'sit']),
+  Object.keys(FRAMES).map((k) => [
+    k,
+    k === 'sleep'
+      ? 'loaf'
+      : k.startsWith('walk')
+        ? 'walk'
+        : k.startsWith('crouch')
+          ? 'crouch'
+          : k === 'leap'
+            ? 'leap'
+            : 'sit',
+  ]),
 )
 
 // ---- output ----
@@ -506,13 +764,14 @@ ${ts(FRAMES)}
 export type Frame = keyof typeof FRAMES
 
 // which body a frame is, for where her hat goes
-export const FAMILY: Record<Frame, 'sit' | 'loaf' | 'walk'> = ${JSON.stringify(FAMILY, null, 2)}
-export const SPOTS: Record<'sit' | 'loaf' | 'walk', { top: [number, number]; ear: [number, number] }> = ${JSON.stringify(SPOTS)}
+export type Family = 'sit' | 'loaf' | 'walk' | 'crouch' | 'leap'
+export const FAMILY: Record<Frame, Family> = ${JSON.stringify(FAMILY, null, 2)}
+export const SPOTS: Record<Family, Record<'top' | 'ear' | 'neck', [number, number]>> = ${JSON.stringify(SPOTS)}
 
 export const HATS = {
 ${ts(HATS)}
 }
-export const HAT_SPOT: Record<keyof typeof HATS, 'top' | 'ear'> = ${JSON.stringify(HAT_SPOT)}
+export const HAT_SPOT: Record<keyof typeof HATS, 'top' | 'ear' | 'neck'> = ${JSON.stringify(HAT_SPOT)}
 
 export const TOYS = {
 ${ts(TOYS)}

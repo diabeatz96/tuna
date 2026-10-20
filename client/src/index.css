@@ -224,13 +224,20 @@
   &:hover {
     background: #56473b;
   }
-  &:active {
+  /* the one picked (a hat, how chatty she is): lighter, pressed in */
+  &:active,
+  &[aria-pressed='true'],
+  &[aria-checked='true'] {
     box-shadow:
       -2px 0 0 0 #1b1714,
       2px 0 0 0 #1b1714,
       0 -2px 0 0 #1b1714,
       0 2px 0 0 #1b1714,
       inset 0 3px 0 0 rgba(0, 0, 0, 0.3);
+  }
+  &[aria-pressed='true'],
+  &[aria-checked='true'] {
+    background: #7f6b58;
   }
 }
 

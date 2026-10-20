@@ -5,7 +5,19 @@ import { actions } from './actions'
 import { toast, tell, dismissToasts } from './dialogs'
 import { event } from './bus'
 import { EMOTES, showEmote } from './emotes'
-import { announce, forget, resetPoints, showBall, showFeed, showHat, showPet, showPoints } from './mascot'
+import {
+  announce,
+  forget,
+  resetPoints,
+  showBall,
+  showBox,
+  showFeed,
+  showHat,
+  showLaser,
+  showPet,
+  showPoints,
+  showTummy,
+} from './mascot'
 import { showPing } from './pings'
 import { chime } from './sound'
 import { hearSound, isSound } from './soundboard'
@@ -127,8 +139,11 @@ export function wireEvents(neko: NekoApp) {
     else if (subject === 'feed') showFeed(neko, sender)
     else if (subject === 'pet') showPet(neko, sender)
     else if (subject === 'ball') showBall(neko, sender, body?.x)
+    else if (subject === 'laser') showLaser(neko, sender, body)
+    else if (subject === 'box') showBox(neko, sender, body?.x)
     else if (subject === 'points') showPoints(neko, sender, body)
     else if (subject === 'hat') showHat(neko, sender, body)
+    else if (subject === 'tummy') showTummy(neko, body)
   })
 
   // Tuna points: a new connection starts the room's list over and announces mine
@@ -136,7 +151,7 @@ export function wireEvents(neko: NekoApp) {
     (s) => s.session_id,
     (id) => {
       resetPoints(neko)
-      if (id) announce(neko)
+      if (id) announce(neko, true)
     },
   )
 

@@ -71,8 +71,11 @@ export const chat: Plugin = {
       store(neko).setState((s) => ({ texts: s.texts + 1 }))
       if (app.getState().settings.chat_sound && payload.id !== client.state.session_id)
         new Audio('chat.mp3').play().catch(() => {})
-      // Tuna hears her name, cats and fish
-      if (MENTION.test(payload.content.text)) neko.bus.emit('cue', { kind: 'mention', name: name(client, payload.id) })
+      // Tuna hears her name, cats and fish, and carries the others' messages into fullscreen
+      const from = name(client, payload.id)
+      if (payload.id !== client.state.session_id)
+        neko.bus.emit('cue', { kind: 'chat', name: from, text: payload.content.text })
+      if (MENTION.test(payload.content.text)) neko.bus.emit('cue', { kind: 'mention', name: from })
     }
   },
   init(neko) {
